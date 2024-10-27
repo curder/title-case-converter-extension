@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "网页输入框单词首字母大写转换器",
+  "version": "1.0",
+  "description": "将网页输入框中的英文单词转换为首字母大写",
+  "permissions": ["activeTab"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "转换为首字母大写"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Z",
+        "mac": "Command+Shift+Z"
+      },
+      "description": "运行首字母大写转换"
+    }
+  }
+}
