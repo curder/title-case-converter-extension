@@ -47,10 +47,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
           activeElement.dispatchEvent(event);
           console.log("已更新输入框并触发事件");
         } catch (e) {
-          console.error("触发事件失败:", e);
+          console.warn("触发事件失败:", e);
         }
       } else {
-        console.log("当前没有选中输入框");
+        console.warn("当前没有选中输入框");
       }
 
       sendResponse({ status: "success", message: "转换完成" });
