@@ -75,9 +75,22 @@ npm run build:firefox
 
 ## 快捷键设置
 
-1. 访问 `chrome://extensions/shortcuts`（Chrome）或 `about:addons`（Firefox）
-2. 找到 "Title Case Converter"
-3. 点击输入框设置您想要的快捷键组合
+### 默认快捷键
+- Windows/Linux: `Alt+Shift+T`
+- Mac: `Command+T`
+
+### 自定义快捷键
+如果默认快捷键与其他程序冲突，您可以自定义：
+
+1. Chrome 浏览器
+   - 访问 `chrome://extensions/shortcuts`
+   - 找到 "Title Case Converter"
+   - 点击输入框设置新的快捷键
+
+2. Firefox 浏览器
+   - 访问 `about:addons`
+   - 点击齿轮图标，选择"管理扩展快捷键"
+   - 找到 "Title Case Converter" 并设置新的快捷键
 
 ## 标题格式规则
 

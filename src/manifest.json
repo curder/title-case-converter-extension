@@ -38,7 +38,11 @@
   ],
   "commands": {
     "_execute_action": {
-      "description": "Convert text to title case"
+      "suggested_key": {
+        "default": "Alt+Shift+T",
+        "mac": "Command+T"
+      },
+      "description": "将文本转换为标题格式"
     }
   }
 }
