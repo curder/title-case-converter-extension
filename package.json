@@ -1,0 +1,17 @@
+{
+  "name": "title-case-converter-extension",
+  "version": "1.1.0",
+  "description": "Browser extension to convert text to title case",
+  "scripts": {
+    "clean": "rimraf dist",
+    "copy:common": "node scripts/copy-common.js",
+    "build:chrome": "npm run copy:common && node scripts/build.js chrome",
+    "build:firefox": "npm run copy:common && node scripts/build.js firefox",
+    "build": "npm run clean && npm run build:chrome && npm run build:firefox"
+  },
+  "devDependencies": {
+    "fs-extra": "^11.1.1",
+    "rimraf": "^5.0.1",
+    "webextension-polyfill": "^0.10.0"
+  }
+}

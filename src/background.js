@@ -1,5 +1,10 @@
 const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 
+if (!browser && chrome) {
+  // Chrome environment
+  importScripts('browser-polyfill.js');
+}
+
 async function convertActiveTab() {
   try {
     const tabs = await browserAPI.tabs.query({ active: true, currentWindow: true });
