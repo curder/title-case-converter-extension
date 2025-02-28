@@ -1,10 +1,26 @@
 const fs = require('fs-extra');
 const path = require('path');
+const archiver = require('archiver');
 
 const browser = process.argv[2];
 if (!browser || !['chrome', 'firefox'].includes(browser)) {
   console.error('Please specify browser: chrome or firefox');
   process.exit(1);
+}
+
+async function zipDirectory(source, out) {
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  const stream = fs.createWriteStream(out);
+
+  return new Promise((resolve, reject) => {
+    archive
+      .directory(source, false)
+      .on('error', err => reject(err))
+      .pipe(stream);
+
+    stream.on('close', () => resolve());
+    archive.finalize();
+  });
 }
 
 async function build() {
@@ -35,6 +51,12 @@ async function build() {
 
     console.log(`✅ Successfully built for ${browser}`);
     console.log(`   Manifest written to: ${outputPath}`);
+
+    // 为特定浏览器创建 zip 文件
+    const zipPath = path.join(rootDir, '..', 'dist', `${browser}.zip`);
+    await zipDirectory(distDir, zipPath);
+    console.log(`✅ Created ${browser}.zip`);
+
   } catch (err) {
     console.error(`❌ Build failed for ${browser}:`, err);
     console.error('Error details:', err.message);
