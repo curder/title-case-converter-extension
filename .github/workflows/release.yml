@@ -9,7 +9,7 @@ permissions: # 添加明确的权限配置
   contents: write # 允许创建 releases 和上传文件
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -19,10 +19,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '16'
           
       - name: Install dependencies
         run: npm install
+        
+      - name: Build extensions
+        run: npm run build
+        
+      - name: Publish to Firefox Add-ons
+        run: npm run publish:firefox
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         
       - name: Check version changes
         id: check_version
@@ -45,9 +54,6 @@ jobs:
               echo "VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
             fi
           fi
-        
-      - name: Build
-        run: npm run build
         
       - name: Create Release
         id: create_release
