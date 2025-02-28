@@ -28,8 +28,13 @@ jobs:
         
       - name: Update version in package.json
         run: |
-          npm version $VERSION --no-git-tag-version
-        
+          CURRENT_VERSION=$(node -pe "require('./package.json').version")
+          if [ "$CURRENT_VERSION" != "$VERSION" ]; then
+            npm version $VERSION --no-git-tag-version
+          else
+            echo "Version not changed"
+          fi
+
       - name: Build
         run: npm run build
         
