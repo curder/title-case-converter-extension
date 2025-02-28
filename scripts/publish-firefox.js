@@ -12,15 +12,23 @@ async function publishToFirefox() {
     const result = await webExt.cmd.sign({
       sourceDir: extensionPath,
       artifactsDir: path.join(__dirname, '../dist'),
-      channel: 'listed',
+      channel: 'unlisted',
       apiKey: process.env.AMO_JWT_ISSUER,
       apiSecret: process.env.AMO_JWT_SECRET,
+      timeout: 5 * 60 * 1000,
+      verbose: true
     });
 
     console.log('Firefox extension published successfully!');
     console.log('Download URL:', result.downloadUrl);
   } catch (error) {
     console.error('Error publishing Firefox extension:', error);
+    if (error.message) {
+      console.error('Error message:', error.message);
+    }
+    if (error.stack) {
+      console.error('Error stack:', error.stack);
+    }
     process.exit(1);
   }
 }
