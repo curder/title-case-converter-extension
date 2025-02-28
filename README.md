@@ -2,6 +2,27 @@
 
 一个简单的浏览器扩展，支持 Chrome 和 Firefox，用于将输入框中的文本转换为标题格式（Title Case）。
 
+## 开发设置
+
+1. 安装依赖：
+
+```bash
+npm install
+```
+
+2. 构建扩展：
+
+```bash
+## 构建所有版本
+npm run build
+
+## 构建 Chrome 版本
+npm run build:chrome
+
+## 构建 Firefox 版本
+npm run build:firefox
+```
+
 ## 功能特点
 
 - 自动将选中输入框中的文本转换为标题格式
