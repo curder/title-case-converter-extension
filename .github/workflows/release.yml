@@ -55,6 +55,7 @@ jobs:
         with:
           files: |
             dist/*-v*.zip
+            dist/*-v*.xpi
           name: "Release v${{ env.VERSION }}"
           draft: false
           prerelease: false

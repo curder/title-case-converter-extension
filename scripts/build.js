@@ -8,8 +8,8 @@ if (!browser || !['chrome', 'firefox'].includes(browser)) {
   process.exit(1);
 }
 
-async function zipDirectory(source, out) {
-  const archive = archiver('zip', { zlib: { level: 9 } });
+async function createArchive(source, out, extension = 'zip') {
+  const archive = archiver(extension === 'xpi' ? 'zip' : extension, { zlib: { level: 9 } });
   const stream = fs.createWriteStream(out);
 
   return new Promise((resolve, reject) => {
@@ -71,10 +71,18 @@ async function build() {
       );
     }
 
-    // 为特定浏览器创建带版本号的 zip 文件
-    const zipPath = path.join(rootDir, '..', 'dist', `${browser}-v${version}.zip`);
-    await zipDirectory(distDir, zipPath);
-    console.log(`✅ Created ${browser}-v${version}.zip`);
+    // 在 build 函数内部，zipDirectory 调用之前添加
+    if (browser === 'firefox') {
+      // 创建 .xpi 文件
+      const xpiPath = path.join(rootDir, '..', 'dist', `firefox-v${version}.xpi`);
+      await createArchive(distDir, xpiPath, 'xpi');
+      console.log(`✅ Created firefox-v${version}.xpi`);
+    } else {
+      // 为 Chrome 创建 .zip 文件
+      const zipPath = path.join(rootDir, '..', 'dist', `${browser}-v${version}.zip`);
+      await createArchive(distDir, zipPath, 'zip');
+      console.log(`✅ Created ${browser}-v${version}.zip`);
+    }
 
   } catch (err) {
     console.error(`❌ Build failed for ${browser}:`, err);

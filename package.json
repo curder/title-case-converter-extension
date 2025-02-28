@@ -1,6 +1,6 @@
 {
   "name": "title-case-converter-extension",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Browser extension to convert text to title case",
   "scripts": {
     "clean": "rimraf dist",
