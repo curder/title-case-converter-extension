@@ -25,6 +25,10 @@ async function zipDirectory(source, out) {
 
 async function build() {
   try {
+    // 读取 package.json 获取版本号
+    const packageJson = await fs.readJson(path.join(__dirname, '..', 'package.json'));
+    const version = packageJson.version;
+
     // 使用绝对路径
     const rootDir = path.join(__dirname, '..', 'src');
     const distDir = path.join(rootDir, '..', 'dist', browser);
@@ -39,10 +43,11 @@ async function build() {
     const browserManifestPath = path.join(rootDir, `manifest.${browser}.json`);
     const browserManifest = await fs.readJson(browserManifestPath);
 
-    // 合并 manifest 文件
+    // 合并 manifest 文件并更新版本号
     const finalManifest = {
       ...baseManifest,
-      ...browserManifest
+      ...browserManifest,
+      version: version // 确保 manifest 使用相同的版本号
     };
 
     // 写入合并后的 manifest
@@ -52,10 +57,10 @@ async function build() {
     console.log(`✅ Successfully built for ${browser}`);
     console.log(`   Manifest written to: ${outputPath}`);
 
-    // 为特定浏览器创建 zip 文件
-    const zipPath = path.join(rootDir, '..', 'dist', `${browser}.zip`);
+    // 为特定浏览器创建带版本号的 zip 文件
+    const zipPath = path.join(rootDir, '..', 'dist', `${browser}-v${version}.zip`);
     await zipDirectory(distDir, zipPath);
-    console.log(`✅ Created ${browser}.zip`);
+    console.log(`✅ Created ${browser}-v${version}.zip`);
 
   } catch (err) {
     console.error(`❌ Build failed for ${browser}:`, err);
