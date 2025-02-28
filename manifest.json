@@ -1,28 +1,42 @@
 {
   "manifest_version": 3,
-  "name": "网页输入框单词首字母大写转换器",
+  "name": "Title Case Converter",
   "version": "1.0",
-  "description": "将网页输入框中的英文单词转换为首字母大写",
-  "permissions": ["activeTab"],
+  "description": "将输入框中的文本转换为标题格式",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Convert to Title Case"
+  },
+  "permissions": [
+    "activeTab"
+  ],
   "background": {
     "service_worker": "background.js"
   },
-  "action": {
-    "default_title": "转换为首字母大写"
-  },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ]
     }
   ],
   "commands": {
     "_execute_action": {
-      "suggested_key": {
-        "default": "Ctrl+Alt+Z",
-        "mac": "Command+Alt+Z"
-      },
-      "description": "运行首字母大写转换"
+      "description": "Convert text to title case"
     }
   }
 }
