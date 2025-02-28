@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*' # 触发标签格式为 v* 的推送事件，如 v1.0.0
 
+permissions: # 添加明确的权限配置
+  contents: write # 允许创建 releases 和上传文件
+
 jobs:
   build:
     runs-on: ubuntu-latest
