@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2  # 获取最近两次提交以便比较变更
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -22,19 +24,28 @@ jobs:
       - name: Install dependencies
         run: npm install
         
-      - name: Get version
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-        
-      - name: Update version in package.json
+      - name: Check version changes
+        id: check_version
         run: |
-          CURRENT_VERSION=$(node -pe "require('./package.json').version")
-          if [ "$CURRENT_VERSION" != "$VERSION" ]; then
-            npm version $VERSION --no-git-tag-version
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          PACKAGE_VERSION=$(node -pe "require('./package.json').version")
+          
+          # 检查最近的提交是否修改了 package.json
+          if git diff HEAD^ HEAD --quiet package.json; then
+            echo "package.json not changed in last commit"
+            echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
           else
-            echo "Version not changed"
+            echo "package.json changed in last commit"
+            if [ "$PACKAGE_VERSION" = "$TAG_VERSION" ]; then
+              echo "Version matches tag"
+              echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
+            else
+              echo "Warning: Package version ($PACKAGE_VERSION) differs from tag version ($TAG_VERSION)"
+              echo "Using package.json version"
+              echo "VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+            fi
           fi
-
+        
       - name: Build
         run: npm run build
         

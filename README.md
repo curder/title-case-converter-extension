@@ -23,6 +23,28 @@ npm run build:chrome
 npm run build:firefox
 ```
 
+## 发布流程
+
+1. 更新版本号：
+   - 修改 `package.json` 中的 `version` 字段
+   - 提交并推送更改：
+     ```bash
+     git add package.json
+     git commit -m "chore: bump version to v1.0.0"
+     git push
+     ```
+
+2. 创建发布：
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+
+3. GitHub Actions 将自动：
+   - 构建扩展
+   - 创建 Release
+   - 上传构建文件
+
 ## 功能特点
 
 - 自动将选中输入框中的文本转换为标题格式

@@ -57,6 +57,20 @@ async function build() {
     console.log(`✅ Successfully built for ${browser}`);
     console.log(`   Manifest written to: ${outputPath}`);
 
+    // 复制必要的文件到 dist 目录
+    const filesToCopy = [
+      'background.js',
+      'content.js',
+      // 添加其他需要复制的文件
+    ];
+
+    for (const file of filesToCopy) {
+      await fs.copy(
+        path.join(rootDir, file),
+        path.join(distDir, file)
+      );
+    }
+
     // 为特定浏览器创建带版本号的 zip 文件
     const zipPath = path.join(rootDir, '..', 'dist', `${browser}-v${version}.zip`);
     await zipDirectory(distDir, zipPath);
