@@ -2,6 +2,7 @@
   "name": "title-case-converter-extension",
   "version": "1.0.7",
   "description": "Browser extension to convert text to title case",
+  "type": "module",
   "scripts": {
     "clean": "rimraf dist",
     "copy:common": "node scripts/copy-common.js",
