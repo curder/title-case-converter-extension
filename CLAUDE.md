@@ -44,7 +44,8 @@ npm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSUE
 
 - `package.json.version` 是版本唯一来源；`src/manifest.json`、`src/manifest.firefox.json` 里的 `version` 字段在构建时会被覆盖，不要在那里改版本。
 - 合并是浅合并：浏览器专属 manifest 中的数组/对象会**整体替换**基础 manifest 的同名项，不会递归合并。例如 Firefox 的 `permissions` 和 `content_scripts` 会覆盖基础值。
-- 修改 `manifest` 引用的文件名时，必须同步 `scripts/copy-common.js` 的复制列表。当前 `src/manifest.chrome.json` 的 `background.service_worker` 指向 `service-worker.js`，但该文件尚未加入复制列表；`src/manifest.firefox.json` 仍残留 MV2 的 `browser_action` / `popup.html` 配置，改动该文件时注意清理。
+- 修改 `manifest` 引用的文件名时，必须同步 `scripts/copy-common.js` 的复制列表（`content.js`、`background.js`、`service-worker.js`、`browser-polyfill.js`）。
+- `src/manifest.firefox.json` 仍残留 MV2 的 `browser_action` / `popup.html` 配置，且未声明 `background`；构建出的 Firefox 包没有后台脚本，改动该文件时需一并处理。
 - `dist/` 在 `.gitignore` 中，仓库里现存的 `dist/` 是本地产物，可能已过期。
 
 ### 发布
@@ -53,6 +54,7 @@ npm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSUE
 
 ## 代码约定
 
-- 源代码、注释、提交信息使用简体中文；提交信息遵循 Conventional Commits 且仅一行。
+- 源代码、注释使用简体中文。
+- 提交信息使用英文，遵循 Conventional Commits，且只写一行（本项目规则覆盖全局 CLAUDE.md 中的中文提交约定）。
 - `content.js` 中的 `chrome.runtime.onMessage` 监听器返回 `true` 以保持消息通道开放，并始终 `sendResponse`，不要改成异步而不处理通道。
 - 新增输入元素类型或转换规则时，只需改 `content.js`；背景脚本不承载业务逻辑。
