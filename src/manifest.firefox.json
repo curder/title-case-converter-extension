@@ -1,8 +1,4 @@
 {
-  "manifest_version": 3,
-  "name": "Title Case Converter",
-  "version": "1.0.7",
-  "description": "Browser extension to convert text to title case",
   "browser_specific_settings": {
     "gecko": {
       "id": "q.curder@gmail.com",
@@ -12,18 +8,10 @@
   "permissions": [
     "activeTab"
   ],
-  "browser_action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icon16.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
-    }
-  },
-  "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
