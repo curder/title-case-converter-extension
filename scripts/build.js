@@ -14,7 +14,7 @@ if (!browser) {
 
 async function buildExtension() {
   try {
-    const manifestSource = browser === 'firefox' ? 'manifest.firefox.json' : 'manifest.json';
+    const manifestSource = browser === 'firefox' ? 'manifest.firefox.json' : 'manifest.chrome.json';
     const targetDir = path.join(__dirname, '../dist', browser);
     const packageJson = JSON.parse(await fs.readFile(path.join(__dirname, '../package.json'), 'utf8'));
     const version = packageJson.version;
