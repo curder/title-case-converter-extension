@@ -5,18 +5,15 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const commonFiles = [
+const jsFiles = [
   'content.js',
-  'popup.html',
-  'popup.js',
-  'style.css',
-  'icon16.png',
-  'icon48.png',
-  'icon128.png'
+  'background.js',
+  'browser-polyfill.js',
 ];
+const iconsDir = path.join(__dirname, '../icons');
 
 // 复制通用文件到 chrome 和 firefox 目录
-async function copyCommonFiles() {
+async function copyFiles() {
   const srcDir = path.join(__dirname, '../src');
   const targets = ['chrome', 'firefox'];
 
@@ -24,7 +21,7 @@ async function copyCommonFiles() {
     const targetDir = path.join(__dirname, '../dist', target);
     await fs.ensureDir(targetDir);
 
-    for (const file of commonFiles) {
+    for (const file of jsFiles) {
       const srcFile = path.join(srcDir, file);
       const destFile = path.join(targetDir, file);
 
@@ -32,7 +29,11 @@ async function copyCommonFiles() {
         await fs.copy(srcFile, destFile);
       }
     }
+
+    if (await fs.pathExists(iconsDir)) {
+      await fs.copy(iconsDir, path.join(targetDir, 'icons'));
+    }
   }
 }
 
-copyCommonFiles().catch(console.error); 
+copyFiles().catch(console.error);
