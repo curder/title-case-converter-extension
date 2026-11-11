@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const jsFiles = [
   'content.js',
   'background.js',
+  'service-worker.js',
   'browser-polyfill.js',
 ];
 const iconsDir = path.join(__dirname, '../icons');
