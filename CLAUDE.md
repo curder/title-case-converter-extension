@@ -31,7 +31,7 @@ npm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSUE
 3. `src/content.js` 接收消息，取 `document.activeElement`，用 `convertToTitleCase()` 改写 `value`，随后派发 `input` 冒泡事件以兼容框架的受控输入。
 4. 转换逻辑全部在 `content.js`：按 `[.!?]\s+` 分句，每句首词大写，`lowercaseWords` 列表中的词保持小写。
 
-`background.js` 通过 `typeof browser !== 'undefined' ? browser : chrome` 兼容两侧 API；Chrome 下 `src/service-worker.js` 先 `importScripts` polyfill 再加载 `background.js`。
+`background.js` 通过 `typeof browser !== 'undefined' ? browser : chrome` 兼容两侧 API。Chrome 下 `src/service-worker.js` 先 `importScripts` polyfill 再加载 `background.js`；Firefox 下 `background.js` 作为 MV3 事件页直接运行，不加载 polyfill。
 
 ### 构建流水线
 
@@ -45,7 +45,7 @@ npm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSUE
 - `package.json.version` 是版本唯一来源；`src/manifest.json`、`src/manifest.firefox.json` 里的 `version` 字段在构建时会被覆盖，不要在那里改版本。
 - 合并是浅合并：浏览器专属 manifest 中的数组/对象会**整体替换**基础 manifest 的同名项，不会递归合并。例如 Firefox 的 `permissions` 和 `content_scripts` 会覆盖基础值。
 - 修改 `manifest` 引用的文件名时，必须同步 `scripts/copy-common.js` 的复制列表（`content.js`、`background.js`、`service-worker.js`、`browser-polyfill.js`）。
-- `src/manifest.firefox.json` 仍残留 MV2 的 `browser_action` / `popup.html` 配置，且未声明 `background`；构建出的 Firefox 包没有后台脚本，改动该文件时需一并处理。
+- 平台后台差异：Chrome 由 `src/manifest.chrome.json` 声明 `background.service_worker`；Firefox 由 `src/manifest.firefox.json` 声明 `background.scripts: ["background.js"]`（Firefox 的 MV3 不支持 service worker 后台），且只保留 `activeTab` 权限、content script 不加载 polyfill（Firefox 原生已有 `browser` 命名空间，polyfill 会在 Firefox 中抛错）。
 - `dist/` 在 `.gitignore` 中，仓库里现存的 `dist/` 是本地产物，可能已过期。
 
 ### 发布
