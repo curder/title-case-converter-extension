@@ -17,6 +17,15 @@ function convertToTitleCase(str) {
   }).join('');
 }
 
+// 使用原生 setter 赋值，避免绕过 React 等框架的 value tracker 导致状态不同步
+function setNativeValue(element, value) {
+  const proto = element.tagName === "TEXTAREA"
+    ? HTMLTextAreaElement.prototype
+    : HTMLInputElement.prototype;
+  const setter = Object.getOwnPropertyDescriptor(proto, "value").set;
+  setter.call(element, value);
+}
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   console.log("收到消息:", request);
   if (request.action === "convertToTitleCase") {
@@ -39,7 +48,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
         let convertedValue = convertToTitleCase(originalValue);
         console.log("转换后的值:", convertedValue);
-        activeElement.value = convertedValue;
+        setNativeValue(activeElement, convertedValue);
 
         // 触发 input 事件
         try {
