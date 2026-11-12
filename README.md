@@ -60,13 +60,13 @@ npm run build:firefox
 2. 打开 Chrome 浏览器，访问 `chrome://extensions/`
 3. 启用"开发者模式"
 4. 点击"加载已解压的扩展程序"
-5. 选择此项目的文件夹
+5. 选择构建后的 `dist/chrome` 目录（先执行 `npm run build:chrome`）
 
 ### Firefox
 1. 下载或克隆此仓库
 2. 打开 Firefox 浏览器，访问 `about:debugging#/runtime/this-firefox`
 3. 点击"临时载入附加组件"
-4. 选择项目中的 `manifest.json` 文件
+4. 选择构建后的 `dist/firefox/manifest.json` 文件（先执行 `npm run build:firefox`）
 
 ## 使用方法
 
@@ -77,7 +77,7 @@ npm run build:firefox
 
 ### 默认快捷键
 - Windows/Linux: `Alt+Shift+T`
-- Mac: `Command+T`
+- Mac: `Option+Shift+T`
 
 ### 自定义快捷键
 如果默认快捷键与其他程序冲突，您可以自定义：
