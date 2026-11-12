@@ -40,7 +40,7 @@
     "_execute_action": {
       "suggested_key": {
         "default": "Alt+Shift+T",
-        "mac": "Command+T"
+        "mac": "Alt+Shift+T"
       },
       "description": "将文本转换为标题格式"
     }
