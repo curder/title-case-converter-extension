@@ -50,7 +50,7 @@ npm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSUE
 
 ### 发布
 
-`scripts/publish-firefox.js` 用 `web-ext` 的 `sign` 以 `unlisted` 渠道上传 `dist/firefox`，输出 `.xpi` 到 `dist/`；凭据只来自环境变量，CI 中由 secrets 注入。
+`scripts/publish-firefox.js` 用 `web-ext` 的 `sign` 以 `unlisted` 渠道上传 `dist/firefox`，再把 AMO 返回的签名 xpi 复制为 `dist/firefox-v<version>.xpi`，确保 GitHub Release 附件是签名版；凭据只来自环境变量，CI 中由 secrets 注入。
 
 ## 代码约定
 
