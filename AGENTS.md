@@ -34,7 +34,7 @@ Issue（记录需求/复现） → 分支 → 小步提交 → PR（关联 Issue
 
 ## 合并前检查
 
-- `npm run build` 通过（Chrome + Firefox 均能产出）。
+- `pnpm run build` 通过（Chrome + Firefox 均能产出）。
 - CI 的 `build` 检查通过。
 - PR 描述中的验证步骤可复现。
 

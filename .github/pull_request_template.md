@@ -12,6 +12,6 @@ Closes #
 
 ## 验证
 
-- [ ] `npm run build` 通过（Chrome + Firefox）
+- [ ] `pnpm run build` 通过（Chrome + Firefox）
 - [ ] CI `build` 检查通过
 - [ ] 涉及行为变更时，已手动加载扩展验证
