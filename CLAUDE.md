@@ -59,6 +59,7 @@ pnpm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSU
 ## 代码约定
 
 - 源代码、注释使用简体中文。
-- 提交信息使用英文，遵循 Conventional Commits，且只写一行（本项目规则覆盖全局 CLAUDE.md 中的中文提交约定）。
+- 提交信息使用英文，遵循 Conventional Commits；subject 只写一行，不加正文（本项目规则覆盖全局 CLAUDE.md 中的中文提交约定）。
+- 唯一例外是协作者标注：改动由 Claude Code 参与编写时，在 subject 后空一行加一行 `Co-Authored-By: Claude Code <noreply@anthropic.com>`，供 GitHub 做协作者归属；除此之外不加任何 trailer 或正文。
 - `content.js` 中的 `chrome.runtime.onMessage` 监听器返回 `true` 以保持消息通道开放，并始终 `sendResponse`，不要改成异步而不处理通道。
 - 新增输入元素类型或转换规则时，只需改 `content.js`；背景脚本不承载业务逻辑。

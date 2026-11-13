@@ -20,6 +20,7 @@ Issue（记录需求/复现） → 分支 → 小步提交 → PR（关联 Issue
    - 使用英文 Conventional Commits，且只写一行 subject，不写多行 body。
    - 示例：`feat(content): toggle back to original text on second trigger`。
    - 不提交 `dist/`、不混入无关格式化或依赖变更。
+   - 由 Claude Code 参与编写的改动，在 subject 后空一行加 `Co-Authored-By: Claude Code <noreply@anthropic.com>`；这是唯一的 trailer 例外。
 4. **开 PR**
    - 标题与主 commit 一致；按 PR 模板填写变更内容、未包含项与验证方式。
    - 行为变更需说明验证结果；涉及界面/交互的改动附截图或复现步骤。
