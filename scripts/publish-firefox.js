@@ -12,24 +12,31 @@ async function publishToFirefox() {
     const extensionPath = path.join(distDir, 'firefox');
     const packageJson = await fs.readJson(path.join(__dirname, '../package.json'));
     const version = packageJson.version;
+    const apiKey = process.env.AMO_JWT_ISSUER;
+    const apiSecret = process.env.AMO_JWT_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      throw new Error('缺少 AMO_JWT_ISSUER / AMO_JWT_SECRET 环境变量，无法签名发布');
+    }
 
     const result = await webExt.cmd.sign({
       sourceDir: extensionPath,
       artifactsDir: distDir,
       channel: 'unlisted',
-      apiKey: process.env.AMO_JWT_ISSUER,
-      apiSecret: process.env.AMO_JWT_SECRET,
-      timeout: 5 * 60 * 1000,
-      verbose: true
+      apiKey,
+      apiSecret,
+      timeout: 5 * 60 * 1000
     });
 
     // AMO 会把签名文件写到 artifactsDir，文件名由服务端决定；
     // 复制为构建脚本约定的名称，供 GitHub Release 的 *-v*.xpi 匹配并上传。
-    const signedFile = (result.downloadedFiles || []).find(file => file.endsWith('.xpi'));
-    if (!signedFile) {
+    // web-ext 8 起改用 AMO 提交 API，downloadedFiles 只包含文件名，需补上 artifactsDir。
+    const signedName = (result.downloadedFiles || []).find(file => file.endsWith('.xpi'));
+    if (!signedName) {
       throw new Error('未找到 AMO 返回的签名 xpi 文件');
     }
 
+    const signedFile = path.isAbsolute(signedName) ? signedName : path.join(distDir, signedName);
     const targetFile = path.join(distDir, `firefox-v${version}.xpi`);
     if (path.resolve(signedFile) !== path.resolve(targetFile)) {
       await fs.copy(signedFile, targetFile, { overwrite: true });
