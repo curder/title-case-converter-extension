@@ -11,14 +11,16 @@ Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的�
 ## 常用命令
 
 ```bash
-npm install                 # 安装依赖
-npm run build               # 清理 dist 并构建 Chrome + Firefox
-npm run build:chrome        # 仅 Chrome（内部先执行 copy:common）
-npm run build:firefox       # 仅 Firefox（内部先执行 copy:common）
-npm run clean               # rimraf dist
-npm run copy:common         # 仅把 src 通用文件与 icons 复制到 dist/{chrome,firefox}
-npm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSUER / AMO_JWT_SECRET
+pnpm install                 # 安装依赖（版本由 package.json 的 packageManager 字段固定）
+pnpm run build               # 清理 dist 并构建 Chrome + Firefox
+pnpm run build:chrome        # 仅 Chrome（内部先执行 copy:common）
+pnpm run build:firefox       # 仅 Firefox（内部先执行 copy:common）
+pnpm run clean               # rimraf dist
+pnpm run copy:common         # 仅把 src 通用文件与 icons 复制到 dist/{chrome,firefox}
+pnpm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSUER / AMO_JWT_SECRET
 ```
+
+依赖管理使用 pnpm，`pnpm-lock.yaml` 是唯一锁文件；CI 用 `pnpm install --frozen-lockfile`。项目根目录的 `pnpm-workspace.yaml` 不承载 workspace，仅存放 pnpm 设置：`allowBuilds` 显式拒绝 `web-ext` 传递依赖（`core-js`、`dtrace-provider`、`spawn-sync`）的安装脚本，这些脚本 npm 时期同样未执行，构建与发布都不依赖它们。
 
 本地验证：在 `chrome://extensions` 开启开发者模式后加载 `dist/chrome`；Firefox 通过 `about:debugging#/runtime/this-firefox` 临时载入 `dist/firefox/manifest.json`（也可用 `npx web-ext run --source-dir dist/firefox`）。
 

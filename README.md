@@ -4,23 +4,25 @@
 
 ## 开发设置
 
+项目使用 pnpm 管理依赖，所需版本见 `package.json` 的 `packageManager` 字段（`corepack enable` 或直接安装对应版本即可）。
+
 1. 安装依赖：
 
 ```bash
-npm install
+pnpm install
 ```
 
 2. 构建扩展：
 
 ```bash
 ## 构建所有版本
-npm run build
+pnpm run build
 
 ## 构建 Chrome 版本
-npm run build:chrome
+pnpm run build:chrome
 
 ## 构建 Firefox 版本
-npm run build:firefox
+pnpm run build:firefox
 ```
 
 ## 发布流程
@@ -61,13 +63,13 @@ npm run build:firefox
 2. 打开 Chrome 浏览器，访问 `chrome://extensions/`
 3. 启用"开发者模式"
 4. 点击"加载已解压的扩展程序"
-5. 选择构建后的 `dist/chrome` 目录（先执行 `npm run build:chrome`）
+5. 选择构建后的 `dist/chrome` 目录（先执行 `pnpm run build:chrome`）
 
 ### Firefox
 1. 下载或克隆此仓库
 2. 打开 Firefox 浏览器，访问 `about:debugging#/runtime/this-firefox`
 3. 点击"临时载入附加组件"
-4. 选择构建后的 `dist/firefox/manifest.json` 文件（先执行 `npm run build:firefox`）
+4. 选择构建后的 `dist/firefox/manifest.json` 文件（先执行 `pnpm run build:firefox`）
 
 ## 使用方法
 
