@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -52,7 +52,7 @@ async function buildExtension() {
     const output = fs.createWriteStream(
       path.join(__dirname, `../dist/${browser}-v${version}.${browser === 'firefox' ? 'xpi' : 'zip'}`)
     );
-    const archive = archiver('zip', { zlib: { level: 9 } });
+    const archive = new ZipArchive({ zlib: { level: 9 } });
 
     archive.pipe(output);
     archive.directory(targetDir, false);
