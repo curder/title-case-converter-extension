@@ -32,7 +32,7 @@ pnpm run build:firefox
    - 提交并推送更改：
      ```bash
      git add package.json
-     git commit -m "chore: bump version to v1.0.0"
+     git commit -m "chore: 升级版本到 v1.0.0"
      git push
      ```
 
