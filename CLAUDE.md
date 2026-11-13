@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的文本转换为 Title Case。仅支持 `INPUT` 与 `TEXTAREA`。无测试框架、无 lint 配置；验证方式是构建后手动加载扩展。
 
+贡献流程（Issue → 分支 → PR → CI → Squash 合并 → 发布）与 Agent 约定见 `AGENTS.md`。
+
 ## 常用命令
 
 ```bash
