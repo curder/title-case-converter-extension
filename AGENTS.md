@@ -17,8 +17,8 @@ Issue（记录需求/复现） → 分支 → 小步提交 → PR（关联 Issue
    - 分支名与 commit 前缀对齐：`feat/xxx`、`fix/xxx`、`docs/xxx`、`chore/xxx`。
    - 一个 PR 只做一件事，控制在可一次 review 完的规模。
 3. **提交**
-   - 使用英文 Conventional Commits，且只写一行 subject，不写多行 body。
-   - 示例：`feat(content): toggle back to original text on second trigger`。
+   - 使用中文 Conventional Commits，且只写一行 subject，不写多行 body。
+   - 示例：`feat(content): 第二次触发时还原原文`。
    - 不提交 `dist/`、不混入无关格式化或依赖变更。
    - 由 Claude Code 参与编写的改动，在 subject 后空一行加 `Co-Authored-By: Claude Code <noreply@anthropic.com>`；这是唯一的 trailer 例外。
 4. **开 PR**
@@ -30,7 +30,7 @@ Issue（记录需求/复现） → 分支 → 小步提交 → PR（关联 Issue
    - 合并后删除远端分支，并执行 `git remote prune origin`。
    - 不在功能 PR 中顺手修改版本号。
 6. **发布**
-   - 单独提交 `chore: bump version to X.Y.Z`。
+   - 单独提交 `chore: 升级版本到 X.Y.Z`。
    - 推送 `vX.Y.Z` tag，由 `.github/workflows/release.yml` 构建、签名并创建 Release。
 
 ## 合并前检查
@@ -43,4 +43,4 @@ Issue（记录需求/复现） → 分支 → 小步提交 → PR（关联 Issue
 
 - 按上述流程执行：从 `master` 拉分支、关联 Issue、走 PR 与 CI，不直接向 `master` 推送。
 - 行为变更优先用项目现有构建/验证命令确认，不新增临时脚本或测试框架。
-- 提交信息遵循本文件与 `CLAUDE.md` 的约定：英文、单行、Conventional Commits。
+- 提交信息遵循本文件与 `CLAUDE.md` 的约定：简体中文、单行、Conventional Commits。
