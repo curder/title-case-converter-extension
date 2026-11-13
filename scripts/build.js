@@ -55,7 +55,12 @@ async function buildExtension() {
     const archive = new ZipArchive({ zlib: { level: 9 } });
 
     archive.pipe(output);
-    archive.directory(targetDir, false);
+    // 使用 glob 而不是 directory，确保隐藏文件（如 .DS_Store）不会被打包
+    archive.glob('**/*', {
+      cwd: targetDir,
+      dot: false,
+      ignore: ['**/.DS_Store', '**/._*'],
+    });
     await archive.finalize();
 
     console.log(`${browser} extension built successfully!`);
