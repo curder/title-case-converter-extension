@@ -35,12 +35,13 @@ Issue（记录需求/复现） → 分支 → 小步提交 → PR（关联 Issue
 
 ## 合并前检查
 
+- `pnpm run verify` 通过（类型检查 + 单元测试）。
 - `pnpm run build` 通过（Chrome + Firefox 均能产出）。
-- CI 的 `build` 检查通过。
+- CI 的 `typecheck` / `test` / `build` 检查通过。
 - PR 描述中的验证步骤可复现。
 
 ## Agent 约定
 
 - 按上述流程执行：从 `master` 拉分支、关联 Issue、走 PR 与 CI，不直接向 `master` 推送。
-- 行为变更优先用项目现有构建/验证命令确认，不新增临时脚本或测试框架。
+- 行为变更优先用项目现有验证命令确认（`pnpm run verify`、`pnpm run build`），不新增临时脚本；测试使用现有的 Vitest 配置。
 - 提交信息遵循本文件与 `CLAUDE.md` 的约定：简体中文、单行、Conventional Commits。
