@@ -1,0 +1,48 @@
+name: Bug 报告
+description: 报告扩展行为异常
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请尽量提供可复现的信息，便于定位问题。
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 你期望发生什么？
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      description: 实际发生了什么？如有报错请附上控制台输出。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开任意网页
+        2. 在输入框中输入 ...
+        3. 按下快捷键 ...
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: 浏览器与版本
+      placeholder: 例如 Chrome 130 / Firefox 133
+    validations:
+      required: true
+  - type: input
+    id: extension-version
+    attributes:
+      label: 扩展版本
+      placeholder: 例如 1.0.9
+    validations:
+      required: true
