@@ -17,6 +17,9 @@ function convertToTitleCase(str) {
   }).join('');
 }
 
+// 记录每个输入框最近一次的转换快照，用于再次触发时还原原文
+const conversionSnapshots = new WeakMap();
+
 // 使用原生 setter 赋值，避免绕过 React 等框架的 value tracker 导致状态不同步
 function setNativeValue(element, value) {
   const proto = element.tagName === "TEXTAREA"
@@ -24,6 +27,24 @@ function setNativeValue(element, value) {
     : HTMLInputElement.prototype;
   const setter = Object.getOwnPropertyDescriptor(proto, "value").set;
   setter.call(element, value);
+}
+
+// 首次触发转换并记录快照；若当前值仍是上次转换结果，则还原为转换前的原文
+function toggleTitleCase(element) {
+  const currentValue = element.value;
+  const snapshot = conversionSnapshots.get(element);
+
+  if (snapshot && currentValue === snapshot.converted) {
+    setNativeValue(element, snapshot.original);
+    conversionSnapshots.delete(element);
+    return { restored: true };
+  }
+
+  // 文本被手动修改过或首次触发：以当前值作为新的原文重新转换
+  const converted = convertToTitleCase(currentValue);
+  conversionSnapshots.set(element, { original: currentValue, converted });
+  setNativeValue(element, converted);
+  return { restored: false };
 }
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -38,6 +59,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         throw new Error("没有找到活动元素");
       }
 
+      let restored = false;
       if (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA") {
         let originalValue = activeElement.value;
         console.log("原始值:", originalValue);
@@ -46,9 +68,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
           throw new Error("输入框为空");
         }
 
-        let convertedValue = convertToTitleCase(originalValue);
-        console.log("转换后的值:", convertedValue);
-        setNativeValue(activeElement, convertedValue);
+        restored = toggleTitleCase(activeElement).restored;
+        console.log(restored ? "已还原原文" : "已转换为标题格式");
 
         // 触发 input 事件
         try {
@@ -62,7 +83,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         console.warn("当前没有选中输入框");
       }
 
-      sendResponse({ status: "success", message: "转换完成" });
+      sendResponse({ status: "success", message: restored ? "已还原原文" : "转换完成" });
     } catch (error) {
       console.error("转换过程出错:", error);
       sendResponse({ status: "error", message: error.message });

@@ -28,7 +28,7 @@ npm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSUE
 
 1. `src/background.js` 监听 `action.onClicked` 和 `commands` 中的 `_execute_action`（Alt+Shift+T / Mac Command+T）。
 2. 触发后先向活动标签页发送消息 `{ action: "convertToTitleCase" }`；若发送失败（content script 未注入，如安装前已打开的页面），Chrome 通过 `chrome.scripting.executeScript` 注入 `content.js` 后重试一次，Firefox 无 `scripting` 权限则直接报错。
-3. `src/content.js` 接收消息，取 `document.activeElement`，用 `convertToTitleCase()` 计算结果，再通过原生 value setter 赋值（避免绕过 React 的 value tracker）并派发 `input` 冒泡事件以同步受控组件状态。
+3. `src/content.js` 接收消息，取 `document.activeElement`，用 `toggleTitleCase()` 计算结果：第一次转换并在 `WeakMap` 中记录原文快照，若当前值仍等于上次转换结果则还原原文；再通过原生 value setter 赋值（避免绕过 React 的 value tracker）并派发 `input` 冒泡事件以同步受控组件状态。
 4. 转换逻辑全部在 `content.js`：按 `[.!?]\s+` 分句，每句首词大写，`lowercaseWords` 列表中的词保持小写。
 
 `background.js` 通过 `typeof browser !== 'undefined' ? browser : chrome` 兼容两侧 API。Chrome 下 `src/service-worker.js` 先 `importScripts` polyfill 再加载 `background.js`；Firefox 下 `background.js` 作为 MV3 事件页直接运行，不加载 polyfill。
