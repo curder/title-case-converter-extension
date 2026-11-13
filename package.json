@@ -6,15 +6,24 @@
   "type": "module",
   "scripts": {
     "clean": "rimraf dist",
-    "copy:common": "node scripts/copy-common.js",
-    "build:chrome": "pnpm run copy:common && node scripts/build.js chrome",
-    "build:firefox": "pnpm run copy:common && node scripts/build.js firefox",
-    "build": "pnpm run clean && pnpm run build:chrome && pnpm run build:firefox",
+    "build:assets": "node scripts/build-assets.js",
+    "build:chrome": "node scripts/build-assets.js chrome && node scripts/build.js chrome",
+    "build:firefox": "node scripts/build-assets.js firefox && node scripts/build.js firefox",
+    "build": "pnpm run clean && pnpm run build:assets && node scripts/build.js chrome && node scripts/build.js firefox",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "pnpm run typecheck && pnpm run test",
     "publish:firefox": "node scripts/publish-firefox.js"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "fs-extra": "^11.4.1",
+    "jsdom": "^31.0.0",
     "rimraf": "^6.1.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0",
     "web-ext": "^10.8.0"
   },
   "dependencies": {

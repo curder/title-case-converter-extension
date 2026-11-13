@@ -12,7 +12,20 @@
 pnpm install
 ```
 
-2. 构建扩展：
+2. 类型检查与测试：
+
+```bash
+## 类型检查 + 单元测试
+pnpm run verify
+
+## 仅类型检查
+pnpm run typecheck
+
+## 仅单元测试
+pnpm run test
+```
+
+3. 构建扩展：
 
 ```bash
 ## 构建所有版本
@@ -108,6 +121,8 @@ pnpm run build:firefox
 ## 技术实现
 
 - 使用 Manifest V3 规范开发
+- 源码使用 TypeScript，esbuild 打包为浏览器可直接加载的 classic script
+- 单元测试使用 Vitest + jsdom，覆盖转换规则、toggle 还原与后台重试逻辑
 - 核心组件：
   - Background Script (Service Worker)：处理扩展图标点击和快捷键事件
   - Content Script：实现文本转换逻辑和DOM操作
