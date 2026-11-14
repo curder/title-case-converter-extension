@@ -29,12 +29,10 @@ async function buildExtension() {
       browserSpecificManifest = await fs.readJson(browserManifestPath);
     }
 
-    // 合并 manifest 文件并确保必要的字段
+    // 合并 manifest 文件：name / description 以 manifest 为准，version 由 package.json 提供
     const finalManifest = {
       ...baseManifest,
       ...browserSpecificManifest,
-      name: packageJson.name,
-      description: packageJson.description,
       version: version,
     };
 

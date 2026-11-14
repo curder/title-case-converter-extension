@@ -49,11 +49,11 @@ e2e：`pnpm run test:e2e` 会先构建 `dist/chrome`，再由 Playwright 以 `--
 `scripts/build-assets.js` → `scripts/build.js <chrome|firefox>`：
 
 - `build-assets.js` 用 esbuild 把 `src/content.ts`、`src/background.ts` 打包成 IIFE 写入 `dist/chrome` 与 `dist/firefox`（content script 与 background 不能是 ES module），同时复制 `browser-polyfill.js`、`service-worker.js` 和 `icons/`；复制与打包都会跳过 `.DS_Store` 等隐藏文件。
-- `build.js` 以 `src/manifest.json` 为基底，**浅合并** `src/manifest.chrome.json` 或 `src/manifest.firefox.json`，再用 `package.json` 的 `name` / `description` / `version` 覆盖，写入 `dist/<browser>/manifest.json`，最后用 archiver 打包成 `dist/chrome-v<version>.zip` 或 `dist/firefox-v<version>.xpi`。
+- `build.js` 以 `src/manifest.json` 为基底，**浅合并** `src/manifest.chrome.json` 或 `src/manifest.firefox.json`，再用 `package.json` 的 `version` 覆盖（name / description 保持 manifest 中的值），写入 `dist/<browser>/manifest.json`，最后用 archiver 打包成 `dist/chrome-v<version>.zip` 或 `dist/firefox-v<version>.xpi`。
 
 关键点：
 
-- `package.json.version` 是版本唯一来源；`src/manifest.json`、`src/manifest.firefox.json` 里的 `version` 字段在构建时会被覆盖，不要在那里改版本。
+- `package.json.version` 是版本唯一来源；`src/manifest.json` 与浏览器专属 manifest 不声明 `version`，构建时统一写入。
 - 合并是浅合并：浏览器专属 manifest 中的数组/对象会**整体替换**基础 manifest 的同名项，不会递归合并。例如 Firefox 的 `permissions` 和 `content_scripts` 会覆盖基础值。
 - 修改 `manifest` 引用的文件名时，必须同步 `scripts/build-assets.js` 的静态复制列表（`service-worker.js`、`browser-polyfill.js`）与 esbuild 入口（`content.ts`、`background.ts`）。
 - 平台后台差异：Chrome 由 `src/manifest.chrome.json` 声明 `background.service_worker`；Firefox 由 `src/manifest.firefox.json` 声明 `background.scripts: ["background.js"]`（Firefox 的 MV3 不支持 service worker 后台），且只保留 `activeTab` 权限、content script 不加载 polyfill（Firefox 原生已有 `browser` 命名空间，polyfill 会在 Firefox 中抛错）。
