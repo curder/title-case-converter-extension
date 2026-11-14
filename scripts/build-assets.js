@@ -47,7 +47,7 @@ async function compileEntrypoints(targetDir) {
     bundle: true,
     format: 'iife',
     platform: 'browser',
-    target: ['chrome109', 'firefox109'],
+    target: ['chrome109', 'firefox140'],
     charset: 'utf8',
     legalComments: 'none',
     minify: true,
