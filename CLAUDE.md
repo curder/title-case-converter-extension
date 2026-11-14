@@ -46,7 +46,7 @@ e2e：`pnpm run test:e2e` 先构建 `dist/chrome`，再由 `scripts/prepare-e2e.
 1. `src/background.ts` 监听 `action.onClicked` 和 `commands` 中的 `_execute_action`（Alt+Shift+T / Mac Command+T）。
 2. 触发后先向活动标签页发送消息 `{ action: "convertToTitleCase" }`；若发送失败（首次触发、页面刷新或安装前已打开的页面），通过 `scripting.executeScript` 注入 `content.js` 后重试一次。Chrome 的 polyfill 未暴露 `scripting`，回退到原生 `chrome.scripting`；Firefox 使用 `browser.scripting`。`activeTab` 在点击图标或快捷键时由浏览器授予，因此无需 `<all_urls>` 常驻脚本。
 3. `src/content.ts` 接收消息，调用 `convertActiveElement(document.activeElement)`：`src/lib/text-control.ts` 只接受可编辑的 `input[type=text|search]` 与 `textarea`；`src/lib/toggle.ts` 负责首次转换并在 `WeakMap` 中记录原文快照，若当前值仍等于上次转换结果则还原原文；`src/lib/native-value.ts` 通过原生 value setter 赋值（避免绕过 React 的 value tracker），`src/convert-active-element.ts` 仅在值真正变化时派发 `input` 冒泡事件以同步受控组件状态。
-4. 转换逻辑全部在 `src/lib/title-case.ts`：按 `[.!?]\s+` 分句，每句首词大写，`LOWERCASE_WORDS` 中的词保持小写。
+4. 转换逻辑全部在 `src/lib/title-case.ts`：按 `[.!?]\s+` 分句，每句首词大写，`LOWERCASE_WORDS` 中的词保持小写；分词使用 Unicode 属性转义，连字符各部分分别大写，撇号后保留首字母大小写，单字母缩写（`U.S.A.`、`e.g.`）保留原样。
 
 `background.ts` 通过 `typeof browser !== 'undefined' ? browser : chrome` 兼容两侧 API；仅声明了项目实际用到的 WebExtension 接口（`src/types/webextension.d.ts`），未引入完整 `@types/chrome`。Chrome 下 `src/service-worker.js` 先 `importScripts` polyfill 再加载打包后的 `background.js`；Firefox 下 `background.js` 作为 MV3 事件页直接运行，不加载 polyfill。
 

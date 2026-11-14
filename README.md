@@ -128,6 +128,10 @@ pnpm run build:firefox
   - 冠词：a, an, the
   - 连词：and, but, or, for, nor
   - 介词：on, at, to, from, by, in, of, with
+- 支持 Unicode 字母，如 `élan vital` → `Élan Vital`
+- 连字符分隔的各部分分别大写，如 `hello-world` → `Hello-World`
+- 撇号后的部分保留原有首字母大小写，如 `don't` → `Don't`、`O'BRIEN` → `O'Brien`
+- 单字母缩写保留原有大小写，如 `U.S.A.`、`e.g.`
 
 ## 技术实现
 
