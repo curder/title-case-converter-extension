@@ -4,7 +4,7 @@ import { chromium, type BrowserContext, type Page, type Worker } from '@playwrig
 
 export const FIXTURE_URL = 'http://127.0.0.1:4173/form.html';
 
-const EXTENSION_PATH = path.resolve(import.meta.dirname, '../dist/chrome');
+const EXTENSION_PATH = path.resolve(import.meta.dirname, '../dist/chrome-e2e');
 
 // 构建产物的 name / description 来自 src/manifest.json，version 来自 package.json
 const BASE_MANIFEST = JSON.parse(
@@ -34,6 +34,8 @@ export interface ExtensionManifest {
   description: string;
   version: string;
   permissions?: string[];
+  content_scripts?: unknown;
+  host_permissions?: string[];
 }
 
 // 仅用于类型检查：运行时代码在扩展 service worker 中执行，由浏览器注入这些 API
@@ -44,6 +46,9 @@ declare const chrome: {
   tabs: {
     query(queryInfo: { active?: boolean; currentWindow?: boolean }): Promise<Array<{ id?: number; active?: boolean }>>;
     sendMessage(tabId: number, message: unknown): Promise<ConvertResponse>;
+  };
+  scripting: {
+    executeScript(injection: { target: { tabId: number }; files: string[] }): Promise<unknown>;
   };
 };
 
@@ -80,7 +85,16 @@ async function sendConvertMessage(worker: Worker): Promise<ConvertResponse> {
       throw new Error('未找到活动标签页');
     }
 
-    return chrome.tabs.sendMessage(tabId, { action: 'convertToTitleCase' });
+    try {
+      return await chrome.tabs.sendMessage(tabId, { action: 'convertToTitleCase' });
+    } catch {
+      // 生产包不再常驻注入 content script，首次触发需要先注入
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content.js'],
+      });
+      return chrome.tabs.sendMessage(tabId, { action: 'convertToTitleCase' });
+    }
   });
 }
 

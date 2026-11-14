@@ -4,6 +4,7 @@ function createBrowserAPI(options: {
   tabs: Array<{ id?: number }>;
   query?: ReturnType<typeof vi.fn>;
   sendMessage?: ReturnType<typeof vi.fn>;
+  scripting?: WebExtensionScriptingAPI;
 }): {
   api: WebExtensionAPI;
   query: ReturnType<typeof vi.fn>;
@@ -21,6 +22,7 @@ function createBrowserAPI(options: {
     runtime: { onMessage: { addListener: vi.fn() } },
     action: { onClicked: { addListener: onClicked } },
     commands: { onCommand: { addListener: onCommand } },
+    scripting: options.scripting,
   } as unknown as WebExtensionAPI;
 
   return { api, query, sendMessage, onClicked, onCommand };
@@ -73,6 +75,30 @@ describe('background convertActiveTab', () => {
 
     vi.stubGlobal('browser', api);
     vi.stubGlobal('chrome', { scripting: { executeScript } } as unknown as WebExtensionAPI);
+
+    const convertActiveTab = await loadBackground();
+    await convertActiveTab();
+
+    expect(executeScript).toHaveBeenCalledWith({
+      target: { tabId: 7 },
+      files: ['content.js'],
+    });
+    expect(sendMessage).toHaveBeenCalledTimes(2);
+  });
+
+  it('browser API 暴露 scripting 时直接使用', async () => {
+    const sendMessage = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Receiving end does not exist'))
+      .mockResolvedValueOnce({ status: 'success' });
+    const executeScript = vi.fn().mockResolvedValue(undefined);
+    const { api } = createBrowserAPI({
+      tabs: [{ id: 7 }],
+      sendMessage,
+      scripting: { executeScript },
+    });
+
+    vi.stubGlobal('browser', api);
 
     const convertActiveTab = await loadBackground();
     await convertActiveTab();

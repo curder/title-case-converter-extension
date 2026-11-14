@@ -11,6 +11,8 @@ let listener: MessageListener | undefined;
 async function loadContent(): Promise<MessageListener> {
   vi.resetModules();
   listener = undefined;
+  // 清除重复注入守卫，模拟全新的页面上下文
+  delete (globalThis as { __titleCaseConverterLoaded?: boolean }).__titleCaseConverterLoaded;
 
   vi.stubGlobal('chrome', {
     runtime: {
@@ -66,5 +68,20 @@ describe('content script', () => {
 
     expect(listener?.({ action: 'otherAction' }, {}, sendResponse)).toBe(false);
     expect(sendResponse).not.toHaveBeenCalled();
+  });
+
+  it('重复注入时只注册一个监听器', async () => {
+    const addListener = vi.fn();
+    vi.stubGlobal('chrome', {
+      runtime: { onMessage: { addListener } },
+    });
+    vi.resetModules();
+    delete (globalThis as { __titleCaseConverterLoaded?: boolean }).__titleCaseConverterLoaded;
+
+    await import('../src/content');
+    vi.resetModules();
+    await import('../src/content');
+
+    expect(addListener).toHaveBeenCalledOnce();
   });
 });

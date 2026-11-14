@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "pnpm run build:chrome && playwright test",
+    "test:e2e": "pnpm run build:e2e && playwright test",
+    "build:e2e": "pnpm run build:chrome && node scripts/prepare-e2e.js",
     "verify": "pnpm run typecheck && pnpm run test",
     "publish:firefox": "node scripts/publish-firefox.js"
   },

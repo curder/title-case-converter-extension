@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概览
 
-Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的文本转换为 Title Case。仅支持可编辑的 `INPUT`（`type=text|search`）与 `TEXTAREA`，排除只读、禁用及其它 input 类型。源码使用 TypeScript，esbuild 打包为 classic script；单元测试使用 Vitest + jsdom。无 lint 配置，验证方式为 `pnpm run verify` + 构建后手动加载扩展。
+Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的文本转换为 Title Case。仅支持可编辑的 `INPUT`（`type=text|search`）与 `TEXTAREA`，排除只读、禁用及其它 input 类型。content script 不常驻，按需注入。源码使用 TypeScript，esbuild 打包为 classic script；单元测试使用 Vitest + jsdom。无 lint 配置，验证方式为 `pnpm run verify` + 构建后手动加载扩展。
 
 贡献流程（Issue → 分支 → PR → CI → Squash 合并 → 发布）与 Agent 约定见 `AGENTS.md`。
 
@@ -29,7 +29,7 @@ pnpm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSU
 
 本地验证：在 `chrome://extensions` 开启开发者模式后加载 `dist/chrome`；Firefox 通过 `about:debugging#/runtime/this-firefox` 临时载入 `dist/firefox/manifest.json`（也可用 `npx web-ext run --source-dir dist/firefox`）。
 
-e2e：`pnpm run test:e2e` 会先构建 `dist/chrome`，再由 Playwright 以 `--load-extension` 在 headless Chromium 中加载扩展；用例通过 service worker 的 `chrome.tabs.sendMessage` 触发转换，因此无法覆盖工具栏点击与 Alt+Shift+T 快捷键。Playwright 的 Firefox 不支持加载扩展，Firefox 仍为手动冒烟。
+e2e：`pnpm run test:e2e` 先构建 `dist/chrome`，再由 `scripts/prepare-e2e.js` 复制为 `dist/chrome-e2e` 并附加 `http://127.0.0.1/*` 的 `host_permissions`。Playwright 无法触发扩展快捷键或工具栏点击，拿不到 `activeTab` 授权，因此测试产物需要这一测试专用权限；生产产物不包含它。用例通过 service worker 的 `chrome.tabs.sendMessage` 触发转换（失败时先注入 `content.js`），无法覆盖工具栏点击与 Alt+Shift+T 快捷键。Playwright 的 Firefox 不支持加载扩展，Firefox 仍为手动冒烟。
 
 发布：改 `package.json` 的 `version` → 提交 → 打 `vX.Y.Z` tag 并推送，`.github/workflows/release.yml` 会自动构建、发布 Firefox、创建 GitHub Release 并上传 `.zip` / `.xpi`。
 
@@ -38,7 +38,7 @@ e2e：`pnpm run test:e2e` 会先构建 `dist/chrome`，再由 Playwright 以 `--
 ### 运行时数据流
 
 1. `src/background.ts` 监听 `action.onClicked` 和 `commands` 中的 `_execute_action`（Alt+Shift+T / Mac Command+T）。
-2. 触发后先向活动标签页发送消息 `{ action: "convertToTitleCase" }`；若发送失败（content script 未注入，如安装前已打开的页面），Chrome 通过 `chrome.scripting.executeScript` 注入 `content.js` 后重试一次，Firefox 无 `scripting` 权限则直接报错。
+2. 触发后先向活动标签页发送消息 `{ action: "convertToTitleCase" }`；若发送失败（首次触发、页面刷新或安装前已打开的页面），通过 `scripting.executeScript` 注入 `content.js` 后重试一次。Chrome 的 polyfill 未暴露 `scripting`，回退到原生 `chrome.scripting`；Firefox 使用 `browser.scripting`。`activeTab` 在点击图标或快捷键时由浏览器授予，因此无需 `<all_urls>` 常驻脚本。
 3. `src/content.ts` 接收消息，调用 `convertActiveElement(document.activeElement)`：`src/lib/text-control.ts` 只接受可编辑的 `input[type=text|search]` 与 `textarea`；`src/lib/toggle.ts` 负责首次转换并在 `WeakMap` 中记录原文快照，若当前值仍等于上次转换结果则还原原文；`src/lib/native-value.ts` 通过原生 value setter 赋值（避免绕过 React 的 value tracker），`src/convert-active-element.ts` 仅在值真正变化时派发 `input` 冒泡事件以同步受控组件状态。
 4. 转换逻辑全部在 `src/lib/title-case.ts`：按 `[.!?]\s+` 分句，每句首词大写，`LOWERCASE_WORDS` 中的词保持小写。
 
@@ -55,8 +55,8 @@ e2e：`pnpm run test:e2e` 会先构建 `dist/chrome`，再由 Playwright 以 `--
 
 - `package.json.version` 是版本唯一来源；`src/manifest.json` 与浏览器专属 manifest 不声明 `version`，构建时统一写入。
 - 合并是浅合并：浏览器专属 manifest 中的数组/对象会**整体替换**基础 manifest 的同名项，不会递归合并。例如 Firefox 的 `permissions` 和 `content_scripts` 会覆盖基础值。
-- 修改 `manifest` 引用的文件名时，必须同步 `scripts/build-assets.js` 的静态复制列表（`service-worker.js`、`browser-polyfill.js`）与 esbuild 入口（`content.ts`、`background.ts`）。
-- 平台后台差异：Chrome 由 `src/manifest.chrome.json` 声明 `background.service_worker`；Firefox 由 `src/manifest.firefox.json` 声明 `background.scripts: ["background.js"]`（Firefox 的 MV3 不支持 service worker 后台），且只保留 `activeTab` 权限、content script 不加载 polyfill（Firefox 原生已有 `browser` 命名空间，polyfill 会在 Firefox 中抛错）。
+- 修改 `manifest` 引用的文件名时，必须同步 `scripts/build-assets.js` 的静态复制列表（`service-worker.js`、`browser-polyfill.js`）、esbuild 入口（`content.ts`、`background.ts`）以及 `src/background.ts` 中注入的 `content.js` 文件名。
+- 平台后台差异：Chrome 由 `src/manifest.chrome.json` 声明 `background.service_worker`；Firefox 由 `src/manifest.firefox.json` 声明 `background.scripts: ["background.js"]`（Firefox 的 MV3 不支持 service worker 后台），权限为 `activeTab` + `scripting`，content script 不加载 polyfill（Firefox 原生已有 `browser` 命名空间，polyfill 会在 Firefox 中抛错）。两个平台都不声明 `content_scripts`，脚本由背景脚本按需注入。
 - `dist/` 在 `.gitignore` 中，仓库里现存的 `dist/` 是本地产物，可能已过期。
 
 ### 发布

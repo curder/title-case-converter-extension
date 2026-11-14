@@ -1,8 +1,32 @@
 // Chrome 由 service-worker.js 先加载 browser-polyfill.js，Firefox 自带 browser 命名空间
 const browserAPI: WebExtensionAPI = typeof browser !== 'undefined' ? browser : chrome;
 
+/**
+ * 获取可用的 scripting API。
+ * Chrome 的 polyfill 未暴露 scripting，需要回退到原生 chrome 命名空间；
+ * Firefox 原生提供 browser.scripting。
+ */
+function getScriptingAPI(): WebExtensionScriptingAPI | undefined {
+  if (browserAPI.scripting) {
+    return browserAPI.scripting;
+  }
+  return typeof chrome !== 'undefined' ? chrome.scripting : undefined;
+}
+
 function requestConversion(tabId: number): Promise<ConvertResponse | undefined> {
   return browserAPI.tabs.sendMessage(tabId, { action: 'convertToTitleCase' });
+}
+
+async function injectContentScript(tabId: number): Promise<void> {
+  const scripting = getScriptingAPI();
+  if (!scripting) {
+    throw new Error('当前环境不支持 scripting API');
+  }
+
+  await scripting.executeScript({
+    target: { tabId },
+    files: ['content.js'],
+  });
 }
 
 async function convertActiveTab(): Promise<void> {
@@ -19,15 +43,9 @@ async function convertActiveTab(): Promise<void> {
 
     try {
       response = await requestConversion(tabId);
-    } catch (error) {
-      // content script 未注入（例如扩展安装前已打开的页面），注入后重试一次
-      if (typeof chrome === 'undefined' || !chrome.scripting) {
-        throw error;
-      }
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        files: ['content.js'],
-      });
+    } catch {
+      // content script 尚未注入（首次触发、安装前已打开或页面已刷新），注入后重试一次
+      await injectContentScript(tabId);
       response = await requestConversion(tabId);
     }
 
