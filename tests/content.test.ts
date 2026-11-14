@@ -60,11 +60,11 @@ describe('content script', () => {
     });
   });
 
-  it('非转换消息不响应但保持消息通道开放', async () => {
+  it('非转换消息不响应且不占用消息通道', async () => {
     await loadContent();
     const sendResponse = vi.fn();
 
-    expect(listener?.({ action: 'otherAction' }, {}, sendResponse)).toBe(true);
+    expect(listener?.({ action: 'otherAction' }, {}, sendResponse)).toBe(false);
     expect(sendResponse).not.toHaveBeenCalled();
   });
 });

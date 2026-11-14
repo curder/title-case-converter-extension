@@ -85,6 +85,17 @@ test('焦点不在输入框时返回成功且不修改其它输入框', async ()
   await expect(session.page.locator('#notes')).toHaveValue('the end');
 });
 
+test('焦点在复选框上时不修改其值', async () => {
+  await session.page.focus('#check');
+
+  expect(await convertActiveTab(session.worker)).toEqual({
+    status: 'success',
+    message: '转换完成',
+  });
+  await expect(session.page.locator('#check')).toBeChecked();
+  await expect(session.page.locator('#check')).toHaveValue('on');
+});
+
 test('派发 input 事件同步受控组件状态', async () => {
   await session.page.focus('#tracked');
   await convertActiveTab(session.worker);
