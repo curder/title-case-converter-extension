@@ -5,16 +5,15 @@ on:
     tags:
       - 'v*' # 触发标签格式为 v* 的推送事件，如 v1.0.0
 
-permissions: # 添加明确的权限配置
+permissions:
   contents: write # 允许创建 releases 和上传文件
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2  # 获取最近两次提交以便比较变更
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -28,6 +27,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify version matches tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION="$(node -pe "require('./package.json').version")"
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "::error::tag v$TAG_VERSION 与 package.json 版本 $PACKAGE_VERSION 不一致"
+            exit 1
+          fi
+
+      - name: Type check and test
+        run: pnpm run verify
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        run: pnpm run test:e2e
+
       - name: Build extensions
         run: pnpm run build
 
@@ -36,39 +53,16 @@ jobs:
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
-        
-      - name: Check version changes
-        id: check_version
-        run: |
-          TAG_VERSION=${GITHUB_REF#refs/tags/v}
-          PACKAGE_VERSION=$(node -pe "require('./package.json').version")
-          
-          # 检查最近的提交是否修改了 package.json
-          if git diff HEAD^ HEAD --quiet package.json; then
-            echo "package.json not changed in last commit"
-            echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
-          else
-            echo "package.json changed in last commit"
-            if [ "$PACKAGE_VERSION" = "$TAG_VERSION" ]; then
-              echo "Version matches tag"
-              echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
-            else
-              echo "Warning: Package version ($PACKAGE_VERSION) differs from tag version ($TAG_VERSION)"
-              echo "Using package.json version"
-              echo "VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
-            fi
-          fi
-        
+
       - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             dist/*-v*.zip
             dist/*-v*.xpi
-          name: "Release v${{ env.VERSION }}"
+          name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
           generate_release_notes: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

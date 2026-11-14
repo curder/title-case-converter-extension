@@ -140,7 +140,7 @@ pnpm run build:firefox
 
 ## 许可证
 
-MIT License
+[MIT License](LICENSE)
 
 ## 贡献
 
