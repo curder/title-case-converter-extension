@@ -4,18 +4,26 @@ function createBrowserAPI(options: {
   tabs: Array<{ id?: number }>;
   query?: ReturnType<typeof vi.fn>;
   sendMessage?: ReturnType<typeof vi.fn>;
-}): { api: WebExtensionAPI; query: ReturnType<typeof vi.fn>; sendMessage: ReturnType<typeof vi.fn> } {
+}): {
+  api: WebExtensionAPI;
+  query: ReturnType<typeof vi.fn>;
+  sendMessage: ReturnType<typeof vi.fn>;
+  onClicked: ReturnType<typeof vi.fn>;
+  onCommand: ReturnType<typeof vi.fn>;
+} {
   const query = options.query ?? vi.fn().mockResolvedValue(options.tabs);
   const sendMessage = options.sendMessage ?? vi.fn().mockResolvedValue({ status: 'success' });
+  const onClicked = vi.fn();
+  const onCommand = vi.fn();
 
   const api = {
     tabs: { query, sendMessage },
     runtime: { onMessage: { addListener: vi.fn() } },
-    action: { onClicked: { addListener: vi.fn() } },
-    commands: { onCommand: { addListener: vi.fn() } },
+    action: { onClicked: { addListener: onClicked } },
+    commands: { onCommand: { addListener: onCommand } },
   } as unknown as WebExtensionAPI;
 
-  return { api, query, sendMessage };
+  return { api, query, sendMessage, onClicked, onCommand };
 }
 
 async function loadBackground(): Promise<() => Promise<void>> {
@@ -88,5 +96,50 @@ describe('background convertActiveTab', () => {
 
     expect(sendMessage).toHaveBeenCalledTimes(1);
     expect(console.error).toHaveBeenCalledWith('操作失败:', expect.any(Error));
+  });
+
+  it('内容脚本返回错误时记录错误日志', async () => {
+    const sendMessage = vi.fn().mockResolvedValue({ status: 'error', message: '输入框为空' });
+    const { api } = createBrowserAPI({ tabs: [{ id: 7 }], sendMessage });
+    vi.stubGlobal('browser', api);
+
+    const convertActiveTab = await loadBackground();
+    await convertActiveTab();
+
+    expect(console.error).toHaveBeenCalledWith('转换失败:', '输入框为空');
+  });
+
+  it('点击扩展图标时触发转换', async () => {
+    const { api, query, sendMessage, onClicked } = createBrowserAPI({ tabs: [{ id: 7 }] });
+    vi.stubGlobal('browser', api);
+
+    await loadBackground();
+
+    expect(onClicked).toHaveBeenCalledOnce();
+    const handler = onClicked.mock.calls[0][0] as () => void;
+    handler();
+
+    await vi.waitFor(() => {
+      expect(query).toHaveBeenCalledWith({ active: true, currentWindow: true });
+      expect(sendMessage).toHaveBeenCalledWith(7, { action: 'convertToTitleCase' });
+    });
+  });
+
+  it('快捷键 _execute_action 触发转换，其它命令忽略', async () => {
+    const { api, sendMessage, onCommand } = createBrowserAPI({ tabs: [{ id: 7 }] });
+    vi.stubGlobal('browser', api);
+
+    await loadBackground();
+
+    expect(onCommand).toHaveBeenCalledOnce();
+    const handler = onCommand.mock.calls[0][0] as (command: string) => void;
+
+    handler('other_command');
+    expect(sendMessage).not.toHaveBeenCalled();
+
+    handler('_execute_action');
+    await vi.waitFor(() => {
+      expect(sendMessage).toHaveBeenCalledWith(7, { action: 'convertToTitleCase' });
+    });
   });
 });
