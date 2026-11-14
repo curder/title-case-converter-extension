@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概览
 
-Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的文本转换为 Title Case。仅支持可编辑的 `INPUT`（`type=text|search`）与 `TEXTAREA`，排除只读、禁用及其它 input 类型。content script 不常驻，按需注入。源码使用 TypeScript，esbuild 打包为 classic script；单元测试使用 Vitest + jsdom。无 lint 配置，验证方式为 `pnpm run verify` + 构建后手动加载扩展。
+Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的文本转换为 Title Case。仅支持可编辑的 `INPUT`（`type=text|search`）与 `TEXTAREA`，排除只读、禁用及其它 input 类型。content script 不常驻，按需注入。源码使用 TypeScript，esbuild 打包为 classic script；单元测试使用 Vitest + jsdom；lint 使用 oxlint，格式使用 Prettier。验证方式为 `pnpm run verify` + `pnpm run test:e2e` + 构建后手动加载扩展。
 
 贡献流程（Issue → 分支 → PR → CI → Squash 合并 → 发布）与 Agent 约定见 `AGENTS.md`。
 
@@ -14,6 +14,7 @@ Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的�
 pnpm install                 # 安装依赖（版本由 package.json 的 packageManager 字段固定）
 pnpm run verify              # lint + 格式检查 + typecheck + 覆盖率测试
 pnpm run lint                # oxlint（--deny-warnings）
+pnpm run lint:firefox        # web-ext lint 校验 Firefox 产物（需先 build:firefox）
 pnpm run format              # prettier --write
 pnpm run format:check        # prettier --check
 pnpm run typecheck           # tsc --noEmit

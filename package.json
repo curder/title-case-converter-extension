@@ -15,6 +15,7 @@
     "build": "pnpm run clean && pnpm run build:assets && node scripts/build.js chrome && node scripts/build.js firefox",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint --deny-warnings src tests e2e scripts",
+    "lint:firefox": "web-ext lint --source-dir dist/firefox --warnings-as-errors",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",

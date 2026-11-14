@@ -38,6 +38,7 @@ Issue（记录需求/复现） → 分支 → 小步提交 → PR（关联 Issue
 - `pnpm run verify` 通过（类型检查 + 单元测试）。
 - `pnpm run test:e2e` 通过（构建 `dist/chrome` 后在 Chromium 中运行 e2e）。
 - `pnpm run build` 通过（Chrome + Firefox 均能产出）。
+- `pnpm run lint:firefox` 通过（校验 Firefox 产物，需先执行构建）。
 - CI 的 `typecheck` / `test` / `build` 检查通过。
 - PR 描述中的验证步骤可复现。
 
