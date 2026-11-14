@@ -36,7 +36,7 @@ jobs:
             exit 1
           fi
 
-      - name: Type check and test
+      - name: Lint, format, type check and test
         run: pnpm run verify
 
       - name: Install Playwright Chromium

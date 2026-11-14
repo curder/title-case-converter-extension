@@ -17,10 +17,7 @@
       // 模拟 React 的 value tracker：在元素实例上重写 value 描述符。
       // 原生 setter 写入不会更新 tracker，因此可以验证 input 事件是否同步了组件状态。
       const tracked = document.querySelector('#tracked');
-      const nativeValue = Object.getOwnPropertyDescriptor(
-        HTMLInputElement.prototype,
-        'value',
-      );
+      const nativeValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
       const state = document.querySelector('#tracked-state');
 
       window.__trackedValue = tracked.value;

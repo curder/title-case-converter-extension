@@ -5,13 +5,8 @@
       "strict_min_version": "109.0"
     }
   },
-  "permissions": [
-    "activeTab",
-    "scripting"
-  ],
+  "permissions": ["activeTab", "scripting"],
   "background": {
-    "scripts": [
-      "background.js"
-    ]
+    "scripts": ["background.js"]
   }
 }

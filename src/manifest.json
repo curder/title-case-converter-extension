@@ -19,10 +19,7 @@
     },
     "default_title": "Convert to Title Case"
   },
-  "permissions": [
-    "activeTab",
-    "scripting"
-  ],
+  "permissions": ["activeTab", "scripting"],
   "commands": {
     "_execute_action": {
       "suggested_key": {

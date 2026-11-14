@@ -25,13 +25,13 @@ async function publishToFirefox() {
       channel: 'unlisted',
       apiKey,
       apiSecret,
-      timeout: 5 * 60 * 1000
+      timeout: 5 * 60 * 1000,
     });
 
     // AMO 会把签名文件写到 artifactsDir，文件名由服务端决定；
     // 复制为构建脚本约定的名称，供 GitHub Release 的 *-v*.xpi 匹配并上传。
     // web-ext 8 起改用 AMO 提交 API，downloadedFiles 只包含文件名，需补上 artifactsDir。
-    const signedName = (result.downloadedFiles || []).find(file => file.endsWith('.xpi'));
+    const signedName = (result.downloadedFiles || []).find((file) => file.endsWith('.xpi'));
     if (!signedName) {
       throw new Error('未找到 AMO 返回的签名 xpi 文件');
     }

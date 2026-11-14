@@ -1,2 +1,2 @@
 importScripts('./browser-polyfill.js');
-importScripts('./background.js'); 
+importScripts('./background.js');

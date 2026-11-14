@@ -4,6 +4,9 @@
   "description": "Browser extension to convert text to title case",
   "packageManager": "pnpm@12.11.2",
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "build:assets": "node scripts/build-assets.js",
@@ -11,26 +14,32 @@
     "build:firefox": "node scripts/build-assets.js firefox && node scripts/build.js firefox",
     "build": "pnpm run clean && pnpm run build:assets && node scripts/build.js chrome && node scripts/build.js firefox",
     "typecheck": "tsc --noEmit",
+    "lint": "oxlint --deny-warnings src tests e2e scripts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "pnpm run build:e2e && playwright test",
     "build:e2e": "pnpm run build:chrome && node scripts/prepare-e2e.js",
-    "verify": "pnpm run typecheck && pnpm run test",
+    "verify": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run test:coverage",
     "publish:firefox": "node scripts/publish-firefox.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
     "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "archiver": "^8.0.0",
     "esbuild": "^0.28.2",
     "fs-extra": "^11.4.1",
     "jsdom": "^31.0.0",
+    "oxlint": "^1.93.0",
+    "prettier": "^3.10.1",
     "rimraf": "^6.1.4",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.0",
-    "web-ext": "^10.8.0"
-  },
-  "dependencies": {
-    "archiver": "^8.0.0"
+    "web-ext": "^10.8.0",
+    "webextension-polyfill": "^0.12.0"
   }
 }

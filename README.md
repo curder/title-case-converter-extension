@@ -15,8 +15,14 @@ pnpm install
 2. 类型检查与测试：
 
 ```bash
-## 类型检查 + 单元测试
+## lint + 格式检查 + 类型检查 + 覆盖率测试
 pnpm run verify
+
+## 仅 lint
+pnpm run lint
+
+## 格式化并写回
+pnpm run format
 
 ## 仅类型检查
 pnpm run typecheck
@@ -50,6 +56,7 @@ pnpm run build:firefox
      ```
 
 2. 创建发布：
+
    ```bash
    git tag v1.0.1
    git push origin v1.0.1
@@ -72,6 +79,7 @@ pnpm run build:firefox
 ## 安装方法
 
 ### Chrome
+
 1. 下载或克隆此仓库
 2. 打开 Chrome 浏览器，访问 `chrome://extensions/`
 3. 启用"开发者模式"
@@ -79,6 +87,7 @@ pnpm run build:firefox
 5. 选择构建后的 `dist/chrome` 目录（先执行 `pnpm run build:chrome`）
 
 ### Firefox
+
 1. 下载或克隆此仓库
 2. 打开 Firefox 浏览器，访问 `about:debugging#/runtime/this-firefox`
 3. 点击"临时载入附加组件"
@@ -93,10 +102,12 @@ pnpm run build:firefox
 ## 快捷键设置
 
 ### 默认快捷键
+
 - Windows/Linux: `Alt+Shift+T`
 - Mac: `Option+Shift+T`
 
 ### 自定义快捷键
+
 如果默认快捷键与其他程序冲突，您可以自定义：
 
 1. Chrome 浏览器

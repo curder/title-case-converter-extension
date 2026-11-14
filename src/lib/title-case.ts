@@ -45,9 +45,7 @@ export function toTitleCase(text: string): string {
           isFirstWord = false;
           return capitalize(word);
         }
-        return LOWERCASE_WORDS.has(word.toLowerCase())
-          ? word.toLowerCase()
-          : capitalize(word);
+        return LOWERCASE_WORDS.has(word.toLowerCase()) ? word.toLowerCase() : capitalize(word);
       });
     })
     .join('');

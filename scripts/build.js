@@ -40,15 +40,11 @@ async function buildExtension() {
     await fs.ensureDir(targetDir);
 
     // 写入合并后的 manifest
-    await fs.writeJson(
-      path.join(targetDir, 'manifest.json'),
-      finalManifest,
-      { spaces: 2 }
-    );
+    await fs.writeJson(path.join(targetDir, 'manifest.json'), finalManifest, { spaces: 2 });
 
     // 创建压缩文件
     const output = fs.createWriteStream(
-      path.join(__dirname, `../dist/${browser}-v${version}.${browser === 'firefox' ? 'xpi' : 'zip'}`)
+      path.join(__dirname, `../dist/${browser}-v${version}.${browser === 'firefox' ? 'xpi' : 'zip'}`),
     );
     const archive = new ZipArchive({ zlib: { level: 9 } });
 
@@ -68,4 +64,4 @@ async function buildExtension() {
   }
 }
 
-buildExtension(); 
+buildExtension();

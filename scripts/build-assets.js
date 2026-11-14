@@ -7,23 +7,31 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(__dirname, '..');
 const distDir = path.join(rootDir, 'dist');
 
-// 原样复制到产物中的运行时文件，TS 入口由 esbuild 另外编译
-const staticFiles = ['browser-polyfill.js', 'service-worker.js'];
-const allTargets = ['chrome', 'firefox'];
+// 原样复制到产物中的运行时文件；service-worker.js 仅 Chrome 使用
+const staticFilesByTarget = {
+  chrome: ['service-worker.js'],
+  firefox: [],
+};
+const allTargets = Object.keys(staticFilesByTarget);
+
+// Chrome 的 background 需要通过它拿到 browser 命名空间；Firefox 原生提供，无需复制
+const polyfillSource = path.join(rootDir, 'node_modules/webextension-polyfill/dist/browser-polyfill.min.js');
 
 // 跳过 .DS_Store 等隐藏文件，避免 macOS 元数据混入构建产物
 function isVisibleFile(source) {
   return !path.basename(source).startsWith('.');
 }
 
-async function copyStaticAssets(targetDir) {
-  await fs.ensureDir(targetDir);
+async function copyStaticAssets(targetDir, target) {
+  // 先清空目标目录，避免重命名入口后旧文件残留进压缩包
+  await fs.emptyDir(targetDir);
 
-  for (const file of staticFiles) {
-    const srcFile = path.join(rootDir, 'src', file);
-    if (await fs.pathExists(srcFile)) {
-      await fs.copy(srcFile, path.join(targetDir, file));
-    }
+  for (const file of staticFilesByTarget[target]) {
+    await fs.copy(path.join(rootDir, 'src', file), path.join(targetDir, file));
+  }
+
+  if (target === 'chrome') {
+    await fs.copy(polyfillSource, path.join(targetDir, 'browser-polyfill.js'));
   }
 
   const iconsDir = path.join(rootDir, 'icons');
@@ -34,10 +42,7 @@ async function copyStaticAssets(targetDir) {
 
 async function compileEntrypoints(targetDir) {
   await build({
-    entryPoints: [
-      path.join(rootDir, 'src/content.ts'),
-      path.join(rootDir, 'src/background.ts'),
-    ],
+    entryPoints: [path.join(rootDir, 'src/content.ts'), path.join(rootDir, 'src/background.ts')],
     outdir: targetDir,
     bundle: true,
     format: 'iife',
@@ -45,6 +50,7 @@ async function compileEntrypoints(targetDir) {
     target: ['chrome109', 'firefox109'],
     charset: 'utf8',
     legalComments: 'none',
+    minify: true,
   });
 }
 
@@ -58,7 +64,7 @@ async function buildTargets() {
     }
 
     const targetDir = path.join(distDir, target);
-    await copyStaticAssets(targetDir);
+    await copyStaticAssets(targetDir, target);
     await compileEntrypoints(targetDir);
   }
 }

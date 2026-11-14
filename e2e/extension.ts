@@ -7,13 +7,14 @@ export const FIXTURE_URL = 'http://127.0.0.1:4173/form.html';
 const EXTENSION_PATH = path.resolve(import.meta.dirname, '../dist/chrome-e2e');
 
 // 构建产物的 name / description 来自 src/manifest.json，version 来自 package.json
-const BASE_MANIFEST = JSON.parse(
-  readFileSync(path.resolve(import.meta.dirname, '../src/manifest.json'), 'utf8'),
-) as { name: string; description: string };
+const BASE_MANIFEST = JSON.parse(readFileSync(path.resolve(import.meta.dirname, '../src/manifest.json'), 'utf8')) as {
+  name: string;
+  description: string;
+};
 
-const PACKAGE_INFO = JSON.parse(
-  readFileSync(path.resolve(import.meta.dirname, '../package.json'), 'utf8'),
-) as { version: string };
+const PACKAGE_INFO = JSON.parse(readFileSync(path.resolve(import.meta.dirname, '../package.json'), 'utf8')) as {
+  version: string;
+};
 
 export const EXTENSION_INFO = {
   name: BASE_MANIFEST.name,
@@ -63,14 +64,10 @@ export async function launchExtension(): Promise<ExtensionSession> {
     // channel: 'chromium' 使用完整版 Chromium，headless 下才能加载扩展
     channel: 'chromium',
     headless: true,
-    args: [
-      `--disable-extensions-except=${EXTENSION_PATH}`,
-      `--load-extension=${EXTENSION_PATH}`,
-    ],
+    args: [`--disable-extensions-except=${EXTENSION_PATH}`, `--load-extension=${EXTENSION_PATH}`],
   });
 
-  const worker = context.serviceWorkers()[0]
-    ?? (await context.waitForEvent('serviceworker'));
+  const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent('serviceworker'));
   const page = context.pages()[0] ?? (await context.newPage());
 
   return { context, worker, page };
