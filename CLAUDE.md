@@ -12,9 +12,13 @@ Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的�
 
 ```bash
 pnpm install                 # 安装依赖（版本由 package.json 的 packageManager 字段固定）
-pnpm run verify              # typecheck + 单元测试
+pnpm run verify              # lint + 格式检查 + typecheck + 覆盖率测试
+pnpm run lint                # oxlint（--deny-warnings）
+pnpm run format              # prettier --write
+pnpm run format:check        # prettier --check
 pnpm run typecheck           # tsc --noEmit
 pnpm run test                # vitest run
+pnpm run test:coverage       # vitest run --coverage（阈值见 vitest.config.ts）
 pnpm run test:watch          # vitest watch
 pnpm run test:e2e            # 构建 Chrome 产物后用 Playwright 跑 e2e（仅 Chromium）
 pnpm run build               # 清理 dist 并构建 Chrome + Firefox
@@ -25,7 +29,9 @@ pnpm run build:assets        # 编译 TS 入口，并把静态文件与 icons �
 pnpm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSUER / AMO_JWT_SECRET
 ```
 
-依赖管理使用 pnpm，`pnpm-lock.yaml` 是唯一锁文件；CI 用 `pnpm install --frozen-lockfile`。项目根目录的 `pnpm-workspace.yaml` 不承载 workspace，仅存放 pnpm 设置：`allowBuilds` 允许 `esbuild` 执行 postinstall 安装平台二进制（pnpm 默认拒绝依赖安装脚本）。
+依赖管理使用 pnpm，`pnpm-lock.yaml` 是唯一锁文件；CI 用 `pnpm install --frozen-lockfile`。`package.json` 的 `engines.node` 要求 Node >= 24。项目根目录的 `pnpm-workspace.yaml` 不承载 workspace，仅存放 pnpm 设置：`allowBuilds` 允许 `esbuild` 执行 postinstall 安装平台二进制（pnpm 默认拒绝依赖安装脚本）。
+
+Lint / 格式：`oxlint`（配置在 `.oxlintrc.json`）负责 lint，`prettier`（配置在 `.prettierrc.json`）负责格式；`typescript-eslint` 目前不支持项目使用的 TypeScript 7，暂不引入。
 
 本地验证：在 `chrome://extensions` 开启开发者模式后加载 `dist/chrome`；Firefox 通过 `about:debugging#/runtime/this-firefox` 临时载入 `dist/firefox/manifest.json`（也可用 `npx web-ext run --source-dir dist/firefox`）。
 
@@ -48,14 +54,14 @@ e2e：`pnpm run test:e2e` 先构建 `dist/chrome`，再由 `scripts/prepare-e2e.
 
 `scripts/build-assets.js` → `scripts/build.js <chrome|firefox>`：
 
-- `build-assets.js` 用 esbuild 把 `src/content.ts`、`src/background.ts` 打包成 IIFE 写入 `dist/chrome` 与 `dist/firefox`（content script 与 background 不能是 ES module），同时复制 `browser-polyfill.js`、`service-worker.js` 和 `icons/`；复制与打包都会跳过 `.DS_Store` 等隐藏文件。
+- `build-assets.js` 先清空目标目录，再用 esbuild 把 `src/content.ts`、`src/background.ts` 打包成 IIFE（minify、跳过 `.DS_Store` 等隐藏文件）写入 `dist/chrome` 与 `dist/firefox`（content script 与 background 不能是 ES module）。Chrome 额外复制 `src/service-worker.js`、从 `node_modules/webextension-polyfill` 复制 `browser-polyfill.js` 以及 `icons/`；Firefox 只复制 `icons/`。
 - `build.js` 以 `src/manifest.json` 为基底，**浅合并** `src/manifest.chrome.json` 或 `src/manifest.firefox.json`，再用 `package.json` 的 `version` 覆盖（name / description 保持 manifest 中的值），写入 `dist/<browser>/manifest.json`，最后用 archiver 打包成 `dist/chrome-v<version>.zip` 或 `dist/firefox-v<version>.xpi`。
 
 关键点：
 
 - `package.json.version` 是版本唯一来源；`src/manifest.json` 与浏览器专属 manifest 不声明 `version`，构建时统一写入。
-- 合并是浅合并：浏览器专属 manifest 中的数组/对象会**整体替换**基础 manifest 的同名项，不会递归合并。例如 Firefox 的 `permissions` 和 `content_scripts` 会覆盖基础值。
-- 修改 `manifest` 引用的文件名时，必须同步 `scripts/build-assets.js` 的静态复制列表（`service-worker.js`、`browser-polyfill.js`）、esbuild 入口（`content.ts`、`background.ts`）以及 `src/background.ts` 中注入的 `content.js` 文件名。
+- 合并是浅合并：浏览器专属 manifest 中的数组/对象会**整体替换**基础 manifest 的同名项，不会递归合并。例如 Firefox 的 `permissions` 会整体替换基础值。
+- 修改 `manifest` 引用的文件名时，必须同步 `scripts/build-assets.js` 的静态复制列表（Chrome 的 `service-worker.js`、`browser-polyfill.js`）、esbuild 入口（`content.ts`、`background.ts`）以及 `src/background.ts` 中注入的 `content.js` 文件名。`browser-polyfill.js` 来自 `webextension-polyfill` 依赖，不再 vendored。
 - 平台后台差异：Chrome 由 `src/manifest.chrome.json` 声明 `background.service_worker`；Firefox 由 `src/manifest.firefox.json` 声明 `background.scripts: ["background.js"]`（Firefox 的 MV3 不支持 service worker 后台），权限为 `activeTab` + `scripting`，content script 不加载 polyfill（Firefox 原生已有 `browser` 命名空间，polyfill 会在 Firefox 中抛错）。两个平台都不声明 `content_scripts`，脚本由背景脚本按需注入。
 - `dist/` 在 `.gitignore` 中，仓库里现存的 `dist/` 是本地产物，可能已过期。
 

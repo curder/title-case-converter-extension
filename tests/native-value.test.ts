@@ -28,8 +28,7 @@ describe('setNativeValue', () => {
     setNativeValue(input, 'Hello World');
 
     expect(trackedValue).toBe('initial');
-    expect(Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.get?.call(input))
-      .toBe('Hello World');
+    expect(Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.get?.call(input)).toBe('Hello World');
   });
 
   it('找不到原生 setter 时退化为直接赋值', () => {
