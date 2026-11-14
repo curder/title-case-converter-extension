@@ -124,8 +124,9 @@ pnpm run build:firefox
 - 源码使用 TypeScript，esbuild 打包为浏览器可直接加载的 classic script
 - 单元测试使用 Vitest + jsdom，覆盖转换规则、toggle 还原与后台重试逻辑
 - 核心组件：
-  - Background Script (Service Worker)：处理扩展图标点击和快捷键事件
-  - Content Script：实现文本转换逻辑和DOM操作
+  - Background Script (Service Worker)：处理扩展图标点击和快捷键事件，按需注入并调用 content script
+  - Content Script：实现文本转换逻辑和DOM操作，仅在触发时注入，不常驻页面
+- 权限模型：仅声明 `activeTab` 与 `scripting`，不在所有网站常驻内容脚本
 - 跨浏览器兼容：使用 browser-polyfill.js 实现 Chrome 和 Firefox 的 API 统一
 - 事件处理：
   - 实现输入框焦点检测

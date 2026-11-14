@@ -30,7 +30,8 @@ test('扩展以 MV3 加载并注册 service worker', async () => {
   expect(manifest.name).toBe(EXTENSION_INFO.name);
   expect(manifest.description).toBe(EXTENSION_INFO.description);
   expect(manifest.version).toBe(EXTENSION_INFO.version);
-  expect(manifest.permissions).toEqual(expect.arrayContaining(['activeTab', 'scripting']));
+  expect(manifest.permissions).toEqual(['activeTab', 'scripting']);
+  expect(manifest.content_scripts).toBeUndefined();
 });
 
 test('普通输入框首次转换、再次触发还原', async () => {
