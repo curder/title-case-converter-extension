@@ -13,6 +13,11 @@ describe('toTitleCase', () => {
     ['hello!  world', 'Hello!  World'],
     ['hello.\nworld', 'Hello.\nWorld'],
     ["don't stop", "Don't Stop"],
+    ['android app', 'Android App'],
+    ['THE END OF THE ROAD', 'The End of the Road'],
+    ['hello, the world', 'Hello, the World'],
+    ['hello-world', 'Hello-world'],
+    ['中文 测试', '中文 测试'],
     ['', ''],
   ])('将 %j 转换为 %j', (input, expected) => {
     expect(toTitleCase(input)).toBe(expected);
