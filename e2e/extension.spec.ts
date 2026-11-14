@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
+  EXTENSION_INFO,
   FIXTURE_URL,
-  PACKAGE_INFO,
   convertActiveTab,
   getManifest,
   launchExtension,
@@ -27,8 +27,9 @@ test('扩展以 MV3 加载并注册 service worker', async () => {
 
   const manifest = await getManifest(session.worker);
   expect(manifest.manifest_version).toBe(3);
-  expect(manifest.name).toBe(PACKAGE_INFO.name);
-  expect(manifest.version).toBe(PACKAGE_INFO.version);
+  expect(manifest.name).toBe(EXTENSION_INFO.name);
+  expect(manifest.description).toBe(EXTENSION_INFO.description);
+  expect(manifest.version).toBe(EXTENSION_INFO.version);
   expect(manifest.permissions).toEqual(expect.arrayContaining(['activeTab', 'scripting']));
 });
 

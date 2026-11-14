@@ -6,10 +6,20 @@ export const FIXTURE_URL = 'http://127.0.0.1:4173/form.html';
 
 const EXTENSION_PATH = path.resolve(import.meta.dirname, '../dist/chrome');
 
-// 构建时 manifest 的 name / version 由 package.json 覆盖，这里以同一来源断言
-export const PACKAGE_INFO = JSON.parse(
+// 构建产物的 name / description 来自 src/manifest.json，version 来自 package.json
+const BASE_MANIFEST = JSON.parse(
+  readFileSync(path.resolve(import.meta.dirname, '../src/manifest.json'), 'utf8'),
+) as { name: string; description: string };
+
+const PACKAGE_INFO = JSON.parse(
   readFileSync(path.resolve(import.meta.dirname, '../package.json'), 'utf8'),
-) as { name: string; version: string };
+) as { version: string };
+
+export const EXTENSION_INFO = {
+  name: BASE_MANIFEST.name,
+  description: BASE_MANIFEST.description,
+  version: PACKAGE_INFO.version,
+};
 const SEND_RETRY_TIMES = 20;
 const SEND_RETRY_INTERVAL = 50;
 
@@ -21,6 +31,7 @@ export interface ConvertResponse {
 export interface ExtensionManifest {
   manifest_version: number;
   name: string;
+  description: string;
   version: string;
   permissions?: string[];
 }
