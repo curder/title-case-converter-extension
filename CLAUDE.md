@@ -16,6 +16,7 @@ pnpm run verify              # typecheck + 单元测试
 pnpm run typecheck           # tsc --noEmit
 pnpm run test                # vitest run
 pnpm run test:watch          # vitest watch
+pnpm run test:e2e            # 构建 Chrome 产物后用 Playwright 跑 e2e（仅 Chromium）
 pnpm run build               # 清理 dist 并构建 Chrome + Firefox
 pnpm run build:chrome        # 仅 Chrome
 pnpm run build:firefox       # 仅 Firefox
@@ -27,6 +28,8 @@ pnpm run publish:firefox     # web-ext 签名并上传 AMO，需要 AMO_JWT_ISSU
 依赖管理使用 pnpm，`pnpm-lock.yaml` 是唯一锁文件；CI 用 `pnpm install --frozen-lockfile`。项目根目录的 `pnpm-workspace.yaml` 不承载 workspace，仅存放 pnpm 设置：`allowBuilds` 允许 `esbuild` 执行 postinstall 安装平台二进制（pnpm 默认拒绝依赖安装脚本）。
 
 本地验证：在 `chrome://extensions` 开启开发者模式后加载 `dist/chrome`；Firefox 通过 `about:debugging#/runtime/this-firefox` 临时载入 `dist/firefox/manifest.json`（也可用 `npx web-ext run --source-dir dist/firefox`）。
+
+e2e：`pnpm run test:e2e` 会先构建 `dist/chrome`，再由 Playwright 以 `--load-extension` 在 headless Chromium 中加载扩展；用例通过 service worker 的 `chrome.tabs.sendMessage` 触发转换，因此无法覆盖工具栏点击与 Alt+Shift+T 快捷键。Playwright 的 Firefox 不支持加载扩展，Firefox 仍为手动冒烟。
 
 发布：改 `package.json` 的 `version` → 提交 → 打 `vX.Y.Z` tag 并推送，`.github/workflows/release.yml` 会自动构建、发布 Firefox、创建 GitHub Release 并上传 `.zip` / `.xpi`。
 

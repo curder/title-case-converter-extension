@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Title Case Converter E2E Fixture</title>
+  </head>
+  <body>
+    <input id="plain" value="hello world" />
+    <textarea id="notes">the end</textarea>
+    <div id="not-input" tabindex="0">不是输入框</div>
+    <input id="empty" value="" />
+    <input id="tracked" value="hello world" />
+    <p id="tracked-state">未同步</p>
+
+    <script>
+      // 模拟 React 的 value tracker：在元素实例上重写 value 描述符。
+      // 原生 setter 写入不会更新 tracker，因此可以验证 input 事件是否同步了组件状态。
+      const tracked = document.querySelector('#tracked');
+      const nativeValue = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        'value',
+      );
+      const state = document.querySelector('#tracked-state');
+
+      window.__trackedValue = tracked.value;
+      Object.defineProperty(tracked, 'value', {
+        configurable: true,
+        get() {
+          return window.__trackedValue;
+        },
+        set(value) {
+          window.__trackedValue = value;
+        },
+      });
+
+      tracked.addEventListener('input', () => {
+        state.textContent = nativeValue.get.call(tracked);
+      });
+    </script>
+  </body>
+</html>

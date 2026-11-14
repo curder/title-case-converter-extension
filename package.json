@@ -13,10 +13,13 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "pnpm run build:chrome && playwright test",
     "verify": "pnpm run typecheck && pnpm run test",
     "publish:firefox": "node scripts/publish-firefox.js"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^26.6.6",
     "esbuild": "^0.28.2",
     "fs-extra": "^11.4.1",
     "jsdom": "^31.0.0",
