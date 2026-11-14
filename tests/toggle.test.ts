@@ -19,7 +19,7 @@ describe('toggleTitleCase', () => {
   it('首次触发转换为标题格式', () => {
     const input = createInput('hello world');
 
-    expect(toggleTitleCase(input)).toEqual({ restored: false });
+    expect(toggleTitleCase(input)).toEqual({ restored: false, changed: true });
     expect(input.value).toBe('Hello World');
   });
 
@@ -27,7 +27,7 @@ describe('toggleTitleCase', () => {
     const input = createInput('hello world');
     toggleTitleCase(input);
 
-    expect(toggleTitleCase(input)).toEqual({ restored: true });
+    expect(toggleTitleCase(input)).toEqual({ restored: true, changed: true });
     expect(input.value).toBe('hello world');
   });
 
@@ -36,41 +36,57 @@ describe('toggleTitleCase', () => {
     toggleTitleCase(input);
 
     input.value = 'goodbye moon';
-    expect(toggleTitleCase(input)).toEqual({ restored: false });
+    expect(toggleTitleCase(input)).toEqual({ restored: false, changed: true });
     expect(input.value).toBe('Goodbye Moon');
 
-    expect(toggleTitleCase(input)).toEqual({ restored: true });
+    expect(toggleTitleCase(input)).toEqual({ restored: true, changed: true });
     expect(input.value).toBe('goodbye moon');
   });
 
   it('支持 textarea', () => {
     const textarea = createTextarea('the end');
 
-    expect(toggleTitleCase(textarea)).toEqual({ restored: false });
+    expect(toggleTitleCase(textarea)).toEqual({ restored: false, changed: true });
     expect(textarea.value).toBe('The End');
 
-    expect(toggleTitleCase(textarea)).toEqual({ restored: true });
+    expect(toggleTitleCase(textarea)).toEqual({ restored: true, changed: true });
     expect(textarea.value).toBe('the end');
   });
 
-  it('输入已是标题格式时保持原值', () => {
+  it('输入已是标题格式时保持原值且标记未变化', () => {
     const input = createInput('Hello World');
 
-    expect(toggleTitleCase(input)).toEqual({ restored: false });
+    expect(toggleTitleCase(input)).toEqual({ restored: false, changed: false });
     expect(input.value).toBe('Hello World');
 
-    expect(toggleTitleCase(input)).toEqual({ restored: true });
+    expect(toggleTitleCase(input)).toEqual({ restored: true, changed: false });
     expect(input.value).toBe('Hello World');
+  });
+
+  it('值未变化时不写入元素', () => {
+    const input = createInput('Hello World');
+    let writes = 0;
+
+    Object.defineProperty(input, 'value', {
+      configurable: true,
+      get: () => 'Hello World',
+      set: () => {
+        writes += 1;
+      },
+    });
+
+    expect(toggleTitleCase(input)).toEqual({ restored: false, changed: false });
+    expect(writes).toBe(0);
   });
 
   it('还原后可以再次转换', () => {
     const input = createInput('hello world');
 
     toggleTitleCase(input);
-    expect(toggleTitleCase(input)).toEqual({ restored: true });
+    expect(toggleTitleCase(input)).toEqual({ restored: true, changed: true });
     expect(input.value).toBe('hello world');
 
-    expect(toggleTitleCase(input)).toEqual({ restored: false });
+    expect(toggleTitleCase(input)).toEqual({ restored: false, changed: true });
     expect(input.value).toBe('Hello World');
   });
 
@@ -84,7 +100,7 @@ describe('toggleTitleCase', () => {
     expect(first.value).toBe('First Text');
     expect(second.value).toBe('Second Text');
 
-    expect(toggleTitleCase(first)).toEqual({ restored: true });
+    expect(toggleTitleCase(first)).toEqual({ restored: true, changed: true });
     expect(first.value).toBe('first text');
     expect(second.value).toBe('Second Text');
   });

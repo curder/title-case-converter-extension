@@ -9,6 +9,8 @@ interface ConversionSnapshot {
 
 export interface ToggleResult {
   restored: boolean;
+  /** 值是否实际发生变化；未变化时调用方不应派发 input 事件 */
+  changed: boolean;
 }
 
 // 记录每个输入框最近一次的转换快照，用于再次触发时还原原文
@@ -24,13 +26,17 @@ export function toggleTitleCase(element: TextControl): ToggleResult {
   const snapshot = snapshots.get(element);
 
   if (snapshot && currentValue === snapshot.converted) {
-    setNativeValue(element, snapshot.original);
     snapshots.delete(element);
-    return { restored: true };
+    if (snapshot.original !== currentValue) {
+      setNativeValue(element, snapshot.original);
+    }
+    return { restored: true, changed: snapshot.original !== currentValue };
   }
 
   const converted = toTitleCase(currentValue);
   snapshots.set(element, { original: currentValue, converted });
-  setNativeValue(element, converted);
-  return { restored: false };
+  if (converted !== currentValue) {
+    setNativeValue(element, converted);
+  }
+  return { restored: false, changed: converted !== currentValue };
 }

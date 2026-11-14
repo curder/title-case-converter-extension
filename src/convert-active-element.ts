@@ -32,8 +32,11 @@ export function convertActiveElement(element: Element | null): ConversionResult 
     return { status: 'error', message: '输入框为空' };
   }
 
-  const { restored } = toggleTitleCase(element);
-  dispatchInputEvent(element);
+  const { restored, changed } = toggleTitleCase(element);
+  // 值没有变化时派发 input 会误触页面的自动保存、校验等副作用
+  if (changed) {
+    dispatchInputEvent(element);
+  }
 
   return { status: 'success', message: restored ? '已还原原文' : '转换完成' };
 }

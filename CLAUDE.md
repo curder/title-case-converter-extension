@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概览
 
-Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的文本转换为 Title Case。仅支持 `INPUT` 与 `TEXTAREA`。源码使用 TypeScript，esbuild 打包为 classic script；单元测试使用 Vitest + jsdom。无 lint 配置，验证方式为 `pnpm run verify` + 构建后手动加载扩展。
+Chrome / Firefox 浏览器扩展（Manifest V3），将当前聚焦输入框的文本转换为 Title Case。仅支持可编辑的 `INPUT`（`type=text|search`）与 `TEXTAREA`，排除只读、禁用及其它 input 类型。源码使用 TypeScript，esbuild 打包为 classic script；单元测试使用 Vitest + jsdom。无 lint 配置，验证方式为 `pnpm run verify` + 构建后手动加载扩展。
 
 贡献流程（Issue → 分支 → PR → CI → Squash 合并 → 发布）与 Agent 约定见 `AGENTS.md`。
 
@@ -39,7 +39,7 @@ e2e：`pnpm run test:e2e` 会先构建 `dist/chrome`，再由 Playwright 以 `--
 
 1. `src/background.ts` 监听 `action.onClicked` 和 `commands` 中的 `_execute_action`（Alt+Shift+T / Mac Command+T）。
 2. 触发后先向活动标签页发送消息 `{ action: "convertToTitleCase" }`；若发送失败（content script 未注入，如安装前已打开的页面），Chrome 通过 `chrome.scripting.executeScript` 注入 `content.js` 后重试一次，Firefox 无 `scripting` 权限则直接报错。
-3. `src/content.ts` 接收消息，调用 `convertActiveElement(document.activeElement)`：`src/lib/toggle.ts` 负责首次转换并在 `WeakMap` 中记录原文快照，若当前值仍等于上次转换结果则还原原文；`src/lib/native-value.ts` 通过原生 value setter 赋值（避免绕过 React 的 value tracker），`src/convert-active-element.ts` 派发 `input` 冒泡事件以同步受控组件状态。
+3. `src/content.ts` 接收消息，调用 `convertActiveElement(document.activeElement)`：`src/lib/text-control.ts` 只接受可编辑的 `input[type=text|search]` 与 `textarea`；`src/lib/toggle.ts` 负责首次转换并在 `WeakMap` 中记录原文快照，若当前值仍等于上次转换结果则还原原文；`src/lib/native-value.ts` 通过原生 value setter 赋值（避免绕过 React 的 value tracker），`src/convert-active-element.ts` 仅在值真正变化时派发 `input` 冒泡事件以同步受控组件状态。
 4. 转换逻辑全部在 `src/lib/title-case.ts`：按 `[.!?]\s+` 分句，每句首词大写，`LOWERCASE_WORDS` 中的词保持小写。
 
 `background.ts` 通过 `typeof browser !== 'undefined' ? browser : chrome` 兼容两侧 API；仅声明了项目实际用到的 WebExtension 接口（`src/types/webextension.d.ts`），未引入完整 `@types/chrome`。Chrome 下 `src/service-worker.js` 先 `importScripts` polyfill 再加载打包后的 `background.js`；Firefox 下 `background.js` 作为 MV3 事件页直接运行，不加载 polyfill。
@@ -68,6 +68,6 @@ e2e：`pnpm run test:e2e` 会先构建 `dist/chrome`，再由 Playwright 以 `--
 - 源代码、注释使用简体中文。
 - 提交信息使用简体中文，前缀遵循 Conventional Commits（`feat` / `fix` / `refactor` / `docs` / `test` / `chore` / `perf` / `style` / `build` / `ci` / `revert`），scope 与 subject 只写一行，不加正文，例如 `fix(content): 第二次触发时还原原文`。
 - 唯一例外是协作者标注：改动由 Claude Code 参与编写时，在 subject 后空一行加一行 `Co-Authored-By: Claude Code <noreply@anthropic.com>`，供 GitHub 做协作者归属；除此之外不加任何 trailer 或正文。
-- `src/content.ts` 中的 `chrome.runtime.onMessage` 监听器返回 `true` 以保持消息通道开放，并始终 `sendResponse`，不要改成异步而不处理通道。
+- `src/content.ts` 中的 `chrome.runtime.onMessage` 监听器仅在处理转换消息时返回 `true` 并 `sendResponse`；其它消息返回 `false`，避免消息通道悬挂。
 - 新增输入元素类型或转换规则时，改 `src/lib/` 下的对应模块与 `src/convert-active-element.ts`，并补充 `tests/` 用例；背景脚本不承载业务逻辑。
 - 测试位于 `tests/`，运行在 jsdom 下；纯逻辑放在 `src/lib/` 以便直接导入，不依赖浏览器扩展环境。

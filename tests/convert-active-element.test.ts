@@ -46,6 +46,33 @@ describe('convertActiveElement', () => {
     expect(listener.mock.calls[0][0]).toMatchObject({ bubbles: true });
   });
 
+  it('值没有变化时不派发 input 事件', () => {
+    const input = createInput('Hello World');
+    const listener = vi.fn();
+    input.addEventListener('input', listener);
+
+    expect(convertActiveElement(input)).toEqual({
+      status: 'success',
+      message: '转换完成',
+    });
+    expect(input.value).toBe('Hello World');
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('忽略非文本输入框，不修改其值', () => {
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = true;
+    document.body.append(checkbox);
+
+    expect(convertActiveElement(checkbox)).toEqual({
+      status: 'success',
+      message: '转换完成',
+    });
+    expect(checkbox.checked).toBe(true);
+    expect(checkbox.value).toBe('on');
+  });
+
   it('再次调用还原原文并同样派发 input 事件', () => {
     const input = createInput('hello world');
     convertActiveElement(input);
