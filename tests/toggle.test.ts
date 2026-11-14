@@ -53,6 +53,27 @@ describe('toggleTitleCase', () => {
     expect(textarea.value).toBe('the end');
   });
 
+  it('输入已是标题格式时保持原值', () => {
+    const input = createInput('Hello World');
+
+    expect(toggleTitleCase(input)).toEqual({ restored: false });
+    expect(input.value).toBe('Hello World');
+
+    expect(toggleTitleCase(input)).toEqual({ restored: true });
+    expect(input.value).toBe('Hello World');
+  });
+
+  it('还原后可以再次转换', () => {
+    const input = createInput('hello world');
+
+    toggleTitleCase(input);
+    expect(toggleTitleCase(input)).toEqual({ restored: true });
+    expect(input.value).toBe('hello world');
+
+    expect(toggleTitleCase(input)).toEqual({ restored: false });
+    expect(input.value).toBe('Hello World');
+  });
+
   it('不同输入框的快照互不影响', () => {
     const first = createInput('first text');
     const second = createInput('second text');

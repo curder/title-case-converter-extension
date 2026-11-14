@@ -61,6 +61,21 @@ describe('convertActiveElement', () => {
     expect(listener).toHaveBeenCalledOnce();
   });
 
+  it('派发 input 事件失败时仍返回成功', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const input = createInput('hello world');
+    vi.spyOn(input, 'dispatchEvent').mockImplementation(() => {
+      throw new Error('dispatch failed');
+    });
+
+    expect(convertActiveElement(input)).toEqual({
+      status: 'success',
+      message: '转换完成',
+    });
+    expect(console.warn).toHaveBeenCalledWith('触发事件失败:', expect.any(Error));
+    expect(input.value).toBe('Hello World');
+  });
+
   it('支持 textarea', () => {
     const textarea = document.createElement('textarea');
     textarea.value = 'the end';
